@@ -1807,6 +1807,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // as on iOS.
     private RequestOptions renderingOptions(Object model) {
         float pixelScale = decodePixelScale();
+        mLoadingPixelScale = pixelScale;
         float decodeDensity = loadingDensity() * pixelScale;
         float blurRadius = mBlurRadius * pixelScale;
         FastImageBlur blur = mBlurRadius > 0
@@ -1899,6 +1900,8 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     private int mShownHeight = 0;
     private int mLoadingWidth = 0;
     private int mLoadingHeight = 0;
+    private float mLoadingPixelScale = 1;
+    private float mShownPixelScale = 1;
     // Whether the shown and the loading image are cover ones fitted instead
     // of cropped (see renderingOptions).
     private boolean mShownUncropped = false;
@@ -1956,6 +1959,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         mShownRequest = mLoadingRequest;
         mShownWidth = mLoadingWidth;
         mShownHeight = mLoadingHeight;
+        mShownPixelScale = mLoadingPixelScale;
         mShownUncropped = mLoadingUncropped;
         mShownUnsized = mLoadingUnsized;
         mShownVector = FastImageSourceSize.isVector(mModel);
@@ -2025,9 +2029,19 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 && !givesShownBitmap(width, height);
     }
 
+    // A capped box can stay the same when the view grows. Only the transforms
+    // that use physical pixel units need a new request for the changed scale.
+    private boolean shownTransformScaleChanged() {
+        boolean offsetCrop = mFitScaleType == ScaleType.CENTER_CROP && !mShownUncropped && !mShownUnsized
+                && (mPositionXOffset != 0 || mPositionYOffset != 0);
+        boolean ownSizeSvg = mShownVector && (mFitScaleType == ScaleType.CENTER_INSIDE || mShownUnsized);
+        return (mBlurRadius > 0 || offsetCrop || ownSizeSvg) && mShownPixelScale != decodePixelScale();
+    }
+
     // Whether loading the shown image for a box (in pixels) would give the
     // bitmap the view shows, so there's nothing to load again.
     private boolean givesShownBitmap(int width, int height) {
+        if (shownTransformScaleChanged()) return false;
         boolean sameBox = width == mShownWidth && height == mShownHeight;
         // A cover image fitted while the view had the previous image's shape
         // or no size (see renderingOptions), in a view that didn't take its
@@ -2147,11 +2161,12 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         // A cover image fitted before the view had its size is cropped now,
         // and one loaded before it had any size is loaded for it.
         RequestBuilder<Drawable> request = shown;
-        if ((mShownUncropped || mShownUnsized) && mBaseRequest != null) {
+        if (mBaseRequest != null && (mShownUncropped || mShownUnsized || shownTransformScaleChanged())) {
             request = mBaseRequest.clone().apply(renderingOptions(mModel));
         } else {
             mLoadingUncropped = mShownUncropped;
             mLoadingUnsized = mShownUnsized;
+            mLoadingPixelScale = mShownPixelScale;
         }
         RequestBuilder<Drawable> builder = request.clone()
                 .error(current.clone())
