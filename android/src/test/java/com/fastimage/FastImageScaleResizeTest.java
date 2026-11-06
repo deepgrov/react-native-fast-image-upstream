@@ -68,6 +68,8 @@ public class FastImageScaleResizeTest {
         // Use heights above the device's actual screen length for both layouts.
         int height = Math.max(3000, screen * 2);
         view.layout(0, 0, 500, height);
+        view.setMaxPixelDensity(2);
+        view.onAfterUpdate(new FastImageViewManager(), manager);
         view.setObjectFit(fit);
         view.setObjectPositionXOffset(offset);
         view.setBlurRadius(blur);

@@ -31,25 +31,43 @@ public class FastImageDecodeDensityTest {
         assertArrayEquals(new int[]{1000, 400}, view.decodeBox(1000, 400));
     }
 
-    @Test public void longMeasuredImageKeepsItsLayoutAndOriginalModeBypassesTheScreenCap() {
+    @Test public void onlyExplicitDensityCapsTheLongSideAndOriginalModeKeepsItsBox() {
         FastImageViewWithUrl view = new FastImageViewWithUrl(RuntimeEnvironment.getApplication(), null);
         DisplayMetrics display = Resources.getSystem().getDisplayMetrics();
         int screen = Math.max(display.widthPixels, display.heightPixels);
         int width = screen / 2, height = width * 8;
         view.layout(0, 0, width, height);
-        // The model chosen for a file by the production load path. No network
-        // or asynchronous request is needed to compare its target box.
-        ReflectionHelpers.setField(view, "mModel", "file:///scroll-image.png");
-        assertArrayEquals(new int[]{Math.round(screen / 8f), screen}, view.decodeBox(width, height));
+        view.setObjectFit(ImageView.ScaleType.FIT_CENTER);
+        ReflectionHelpers.setField(view, "mModel", "https://example.org/scroll-image.png");
+        assertArrayEquals(FastImageSourceSize.box(width, height), view.decodeBox(width, height));
         assertEquals(height, view.getHeight());
         view.setMaxPixelDensity(2);
         assertArrayEquals(new int[]{Math.round(screen / 8f), screen}, view.decodeBox(width, height));
         view.setDownsample(false);
         assertArrayEquals(FastImageSourceSize.box(width, height), view.decodeBox(width, height));
         view.setDownsample(true);
-        view.setMaxPixelDensity(0);
+        // A recycled or invalid density value restores the original unmarked policy.
+        FastImageViewManager manager = new FastImageViewManager();
+        manager.getDelegate().setProperty(view, "maxPixelDensity", null);
+        assertArrayEquals(FastImageSourceSize.box(width, height), view.decodeBox(width, height));
+        for (float invalid : new float[]{-2, Float.NaN, Float.POSITIVE_INFINITY}) {
+            view.setMaxPixelDensity(invalid);
+            assertArrayEquals(FastImageSourceSize.box(width, height), view.decodeBox(width, height));
+        }
+        view.setMaxPixelDensity(5); // Valid opt-in above device density: only the long side is limited.
+        assertArrayEquals(new int[]{Math.round(screen / 8f), screen}, view.decodeBox(width, height));
         ReflectionHelpers.setField(view, "mModel", Uri.parse("android.resource://example/drawable/cover"));
         assertArrayEquals(FastImageSourceSize.box(width, height), view.decodeBox(width, height));
+    }
+
+    @Test public void unmarkedTallRemoteContainUsesThePhysicalBoxWithinTheUpstreamPixelBudget() {
+        FastImageViewWithUrl view = new FastImageViewWithUrl(RuntimeEnvironment.getApplication(), null);
+        view.setObjectFit(ImageView.ScaleType.FIT_CENTER);
+        ReflectionHelpers.setField(view, "mModel", "https://example.org/scroll-image.png");
+        view.layout(0, 0, 1080, 8640);
+        assertArrayEquals(new int[]{1080, 8640}, view.decodeBox(1080, 8640));
+        view.layout(0, 0, 1000, 100000);
+        assertArrayEquals(new int[]{409, 40960}, view.decodeBox(1000, 100000));
     }
 
     @Test public void originalPixelRequestsAndUnknownSizesKeepTheirContract() {

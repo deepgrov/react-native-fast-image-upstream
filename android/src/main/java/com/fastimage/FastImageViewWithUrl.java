@@ -1751,11 +1751,11 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     }
 
     private float decodePixelScale() {
-        if (!mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
+        if (mMaxPixelDensity == 0 || !mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
         float density = getResources().getDisplayMetrics().density;
-        float scale = mMaxPixelDensity > 0 && density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
-        // A measured display view can be many screens tall (e.g. a scroll
-        // illustration). Limit its requested long side, preserving its shape.
+        float scale = density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        // Only a view opting into limited density also limits its requested
+        // long side. Unmarked illustrations keep their full fitted width.
         // The synthetic box for an open side is not the displayed box.
         int width = contentWidth(), height = contentHeight();
         if (mModel == null || (mModel instanceof Uri && FastImageSource.isResourceUri((Uri) mModel))
