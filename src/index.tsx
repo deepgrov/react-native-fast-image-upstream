@@ -709,6 +709,8 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
      * @platform tvos
      */
     downsample?: boolean
+    /** Maximum decoded pixels per layout point for downsampled images on Android. */
+    maxPixelDensity?: number
     /**
      * How bright HDR photos (e.g. photos taken on an iPhone) can be, on
      * displays that support it:

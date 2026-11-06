@@ -1,6 +1,9 @@
 {
     "name": "react-native-fast-image",
     "version": "10.11.0",
+    "frontiaCapabilities": {
+        "androidMaxPixelDensity": true
+    },
     "description": "FastImage, performant React Native image component.",
     "keywords": [
         "cache",
