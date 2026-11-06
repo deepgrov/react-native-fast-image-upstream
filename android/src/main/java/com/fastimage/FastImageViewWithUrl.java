@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -20,6 +21,7 @@ import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -1749,9 +1751,19 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     }
 
     private float decodePixelScale() {
-        if (mMaxPixelDensity == 0 || !mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
+        if (!mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
         float density = getResources().getDisplayMetrics().density;
-        return density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        float scale = mMaxPixelDensity > 0 && density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        // A measured display view can be many screens tall (e.g. a scroll
+        // illustration). Limit its requested long side, preserving its shape.
+        // The synthetic box for an open side is not the displayed box.
+        int width = contentWidth(), height = contentHeight();
+        if (mModel == null || (mModel instanceof Uri && FastImageSource.isResourceUri((Uri) mModel))
+                || width <= 0 || height <= 0 || laysOutOneSide() || laysOutNoSide()
+                || (laysOutPreviousImage() && followsImage())) return scale;
+        DisplayMetrics display = Resources.getSystem().getDisplayMetrics();
+        int screen = Math.max(display.widthPixels, display.heightPixels);
+        return screen > 0 ? Math.min(scale, (float) screen / Math.max(width, height)) : scale;
     }
 
     // Both the target (including memory-cache keys) and resize checks use the
