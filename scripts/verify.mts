@@ -5033,10 +5033,15 @@ async function buildAndroid(app: App) {
 // The library's unit tests (android/src/test, with Robolectric), with the
 // main example's Gradle project, which has just built the library.
 async function androidUnitTests(dir: string) {
+    // React Native's Gradle plugin names the linked project with nameCleansed.
+    const project = PACKAGE_NAME.replace(/[~*!'()]+/g, '_').replace(
+        /^@([\w.-]+)\//,
+        '$1_',
+    )
     const log = path.join(OUT, 'android-unit-tests.log')
     const result = await run(
         './gradlew',
-        [':react-native-fast-image:testDebugUnitTest', '--console=plain', '-q'],
+        [`:${project}:testDebugUnitTest`, '--console=plain', '-q'],
         { cwd: path.join(dir, 'android'), log, timeout: 600 },
     )
     // The library's android/build, where Gradle writes the reports, is

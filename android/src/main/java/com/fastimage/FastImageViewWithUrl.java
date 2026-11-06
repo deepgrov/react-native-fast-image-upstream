@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -20,6 +21,7 @@ import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -1144,7 +1146,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 if (!byWidth) width = byHeight ? (int) (FastImageSourceSize.MAX_PIXELS / height) : screen;
                 if (!byHeight) height = byWidth ? (int) (FastImageSourceSize.MAX_PIXELS / width) : screen;
             }
-            int[] box = FastImageSourceSize.box(width, height);
+            int[] box = decodeBox(width, height);
             cb.onSizeReady(box[0], box[1]);
         }
 
@@ -1390,9 +1392,9 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // Where Glide crops a cover image: CenterCrop at the center (as without
     // objectPosition), FastImageCrop elsewhere.
     @Nullable
-    private FastImageCrop positionedCrop() {
+    private FastImageCrop positionedCrop(float pixelScale) {
         return mFitScaleType == ScaleType.CENTER_CROP && !isCentered() && !mPixelated && mDownsample
-                ? new FastImageCrop(mPositionX, mPositionXOffset, mPositionY, mPositionYOffset)
+                ? new FastImageCrop(mPositionX, mPositionXOffset * pixelScale, mPositionY, mPositionYOffset * pixelScale)
                 : null;
     }
 
@@ -1739,6 +1741,42 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // size, so a view zoomed in on with a transform shows the image's detail.
     // Part of the request, so a change reloads.
     private boolean mDownsample = true;
+    private float mMaxPixelDensity;
+
+    public void setMaxPixelDensity(float value) {
+        float next = Float.isFinite(value) && value > 0 ? value : 0;
+        if (next == mMaxPixelDensity) return;
+        mMaxPixelDensity = next;
+        mNeedsReload = true;
+    }
+
+    private float decodePixelScale() {
+        if (mMaxPixelDensity == 0 || !mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
+        float density = getResources().getDisplayMetrics().density;
+        float scale = density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        // Only a view opting into limited density also limits its requested
+        // long side. Unmarked illustrations keep their full fitted width.
+        // The synthetic box for an open side is not the displayed box.
+        int width = contentWidth(), height = contentHeight();
+        if (mModel == null || (mModel instanceof Uri && FastImageSource.isResourceUri((Uri) mModel))
+                || width <= 0 || height <= 0 || laysOutOneSide() || laysOutNoSide()
+                || (laysOutPreviousImage() && followsImage())) return scale;
+        DisplayMetrics display = Resources.getSystem().getDisplayMetrics();
+        int screen = Math.max(display.widthPixels, display.heightPixels);
+        return screen > 0 ? Math.min(scale, (float) screen / Math.max(width, height)) : scale;
+    }
+
+    // Both the target (including memory-cache keys) and resize checks use the
+    // same requested pixels. Layout, intrinsic source size and EXIF stay in
+    // their original coordinate systems.
+    int[] decodeBox(int width, int height) {
+        float scale = decodePixelScale();
+        if (scale < 1 && width > 0 && height > 0) {
+            width = Math.max(1, Math.round(width * scale));
+            height = Math.max(1, Math.round(height * scale));
+        }
+        return FastImageSourceSize.box(width, height);
+    }
 
     public void setDownsample(boolean downsample) {
         if (downsample == mDownsample) return;
@@ -1768,8 +1806,12 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // pixelated, and the blur. A blurred animated image shows its first frame,
     // as on iOS.
     private RequestOptions renderingOptions(Object model) {
+        float pixelScale = decodePixelScale();
+        mLoadingPixelScale = pixelScale;
+        float decodeDensity = loadingDensity() * pixelScale;
+        float blurRadius = mBlurRadius * pixelScale;
         FastImageBlur blur = mBlurRadius > 0
-                ? new FastImageBlur(mBlurRadius, mFitScaleType, loadingDensity())
+                ? new FastImageBlur(blurRadius, mFitScaleType, decodeDensity)
                 : null;
         RequestOptions options;
         if (mPixelated) {
@@ -1805,8 +1847,8 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             ScaleType fit = unsized ? ScaleType.CENTER_INSIDE : uncropped ? ScaleType.FIT_CENTER : mFitScaleType;
             mLoadingUncropped = uncropped;
             mLoadingUnsized = unsized;
-            if ((uncropped || unsized) && blur != null) blur = new FastImageBlur(mBlurRadius, fit, loadingDensity());
-            FastImageCrop crop = uncropped || unsized ? null : positionedCrop();
+            if ((uncropped || unsized) && blur != null) blur = new FastImageBlur(blurRadius, fit, decodeDensity);
+            FastImageCrop crop = uncropped || unsized ? null : positionedCrop(pixelScale);
             boolean hardwareCover = FastImageHardware.allowed(this, fit, crop, blur, mDownsample);
             options = FastImageSourceSize.scaleTypeOptions(fit,
                     FastImageSourceSize.capture(fit, model, mDownsample, hardwareCover),
@@ -1816,7 +1858,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             // drawn at that size, so it's sharp (not with a blur, which hides
             // the difference).
             if (ownSize && blur == null) {
-                options = options.set(FastImageSvg.DENSITY, loadingDensity())
+                options = options.set(FastImageSvg.DENSITY, decodeDensity)
                         .set(FastImageSvg.FITS, fit == ScaleType.CENTER_INSIDE);
             }
         }
@@ -1858,6 +1900,8 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     private int mShownHeight = 0;
     private int mLoadingWidth = 0;
     private int mLoadingHeight = 0;
+    private float mLoadingPixelScale = 1;
+    private float mShownPixelScale = 1;
     // Whether the shown and the loading image are cover ones fitted instead
     // of cropped (see renderingOptions).
     private boolean mShownUncropped = false;
@@ -1915,6 +1959,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         mShownRequest = mLoadingRequest;
         mShownWidth = mLoadingWidth;
         mShownHeight = mLoadingHeight;
+        mShownPixelScale = mLoadingPixelScale;
         mShownUncropped = mLoadingUncropped;
         mShownUnsized = mLoadingUnsized;
         mShownVector = FastImageSourceSize.isVector(mModel);
@@ -1970,7 +2015,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // Whether the image loaded, at a size the view doesn't have now: loading
     // it for the view's box would give another bitmap.
     private boolean isResized() {
-        int[] box = FastImageSourceSize.box(contentWidth(), contentHeight());
+        int[] box = decodeBox(contentWidth(), contentHeight());
         int width = box[0];
         int height = box[1];
         return requestManager != null && !mDropped && !mNeedsReload
@@ -1984,9 +2029,19 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 && !givesShownBitmap(width, height);
     }
 
+    // A capped box can stay the same when the view grows. Only the transforms
+    // that use physical pixel units need a new request for the changed scale.
+    private boolean shownTransformScaleChanged() {
+        boolean offsetCrop = mFitScaleType == ScaleType.CENTER_CROP && !mShownUncropped && !mShownUnsized
+                && (mPositionXOffset != 0 || mPositionYOffset != 0);
+        boolean ownSizeSvg = mShownVector && (mFitScaleType == ScaleType.CENTER_INSIDE || mShownUnsized);
+        return (mBlurRadius > 0 || offsetCrop || ownSizeSvg) && mShownPixelScale != decodePixelScale();
+    }
+
     // Whether loading the shown image for a box (in pixels) would give the
     // bitmap the view shows, so there's nothing to load again.
     private boolean givesShownBitmap(int width, int height) {
+        if (shownTransformScaleChanged()) return false;
         boolean sameBox = width == mShownWidth && height == mShownHeight;
         // A cover image fitted while the view had the previous image's shape
         // or no size (see renderingOptions), in a view that didn't take its
@@ -2106,11 +2161,12 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         // A cover image fitted before the view had its size is cropped now,
         // and one loaded before it had any size is loaded for it.
         RequestBuilder<Drawable> request = shown;
-        if ((mShownUncropped || mShownUnsized) && mBaseRequest != null) {
+        if (mBaseRequest != null && (mShownUncropped || mShownUnsized || shownTransformScaleChanged())) {
             request = mBaseRequest.clone().apply(renderingOptions(mModel));
         } else {
             mLoadingUncropped = mShownUncropped;
             mLoadingUnsized = mShownUnsized;
+            mLoadingPixelScale = mShownPixelScale;
         }
         RequestBuilder<Drawable> builder = request.clone()
                 .error(current.clone())
