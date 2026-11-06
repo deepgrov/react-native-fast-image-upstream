@@ -19,6 +19,7 @@ import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
+import com.bumptech.glide.load.resource.bitmap.Downsampler;
 import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestOptions;
@@ -149,12 +150,17 @@ final class FastImageSourceSize {
             Capture capture,
             @Nullable FastImageCrop crop,
             @Nullable FastImageBlur blur,
-            boolean downsample) {
+            boolean downsample,
+            boolean hardwareCover) {
         RequestOptions options = new RequestOptions();
         BitmapTransformation transformation = null;
         if (scaleType != null && downsample) {
             switch (scaleType) {
                 case CENTER_CROP:
+                    if (hardwareCover) {
+                        options = options.dontTransform().set(Downsampler.ALLOW_HARDWARE_CONFIG, true);
+                        break;
+                    }
                     if (crop != null) {
                         // At objectPosition, rather than the center.
                         options = options.optionalTransform(crop);
@@ -187,9 +193,9 @@ final class FastImageSourceSize {
         return options.downsample(capture);
     }
 
-    static Capture capture(@Nullable ImageView.ScaleType scaleType, Object model, boolean downsample) {
+    static Capture capture(@Nullable ImageView.ScaleType scaleType, Object model, boolean downsample, boolean hardwareCover) {
         DownsampleStrategy strategy = strategy(scaleType);
-        return new Capture(downsample ? strategy : FULL_SIZE, strategy, String.valueOf(model));
+        return new Capture(hardwareCover ? FastImageHardware.COVER : downsample ? strategy : FULL_SIZE, strategy, String.valueOf(model));
     }
 
     private static DownsampleStrategy strategy(@Nullable ImageView.ScaleType scaleType) {

@@ -1429,6 +1429,11 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     @Override
     public void setImageDrawable(@Nullable Drawable drawable) {
         mShowsPlaceholder = drawable != null && drawable == mShownPlaceholder;
+        if (Build.VERSION.SDK_INT >= 28 && drawable instanceof BitmapDrawable
+                && !(drawable instanceof FastImageHardwareDrawable)
+                && ((BitmapDrawable) drawable).getBitmap().getConfig() == Bitmap.Config.HARDWARE) {
+            drawable = new FastImageHardwareDrawable(getResources(), (BitmapDrawable) drawable);
+        }
         super.setImageDrawable(drawable);
         updateImageMatrix();
     }
@@ -1801,9 +1806,11 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             mLoadingUncropped = uncropped;
             mLoadingUnsized = unsized;
             if ((uncropped || unsized) && blur != null) blur = new FastImageBlur(mBlurRadius, fit, loadingDensity());
+            FastImageCrop crop = uncropped || unsized ? null : positionedCrop();
+            boolean hardwareCover = FastImageHardware.allowed(this, fit, crop, blur, mDownsample);
             options = FastImageSourceSize.scaleTypeOptions(fit,
-                    FastImageSourceSize.capture(fit, model, mDownsample),
-                    uncropped || unsized ? null : positionedCrop(), blur, mDownsample);
+                    FastImageSourceSize.capture(fit, model, mDownsample, hardwareCover),
+                    crop, blur, mDownsample, hardwareCover);
             boolean ownSize = fit == ScaleType.CENTER_INSIDE || fit == ScaleType.CENTER;
             // scale-down and none show it at its own size in dp: an SVG is
             // drawn at that size, so it's sharp (not with a blur, which hides
