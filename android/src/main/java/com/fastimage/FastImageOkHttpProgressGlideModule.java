@@ -161,6 +161,7 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
         FastImageSvg.register(registry, glide.getBitmapPool());
         FastImageAnimated.register(context, glide, registry);
         FastImageApng.register(registry);
+        FastImageGif.register(context, glide, registry);
 
         // writeToCache: local files stored under a source's key.
         registry.prepend(FastImageCacheWrite.class, InputStream.class,

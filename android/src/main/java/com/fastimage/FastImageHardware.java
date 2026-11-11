@@ -5,7 +5,9 @@ import android.view.View;
 import android.view.ViewParent;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
+import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
+import com.bumptech.glide.load.resource.bitmap.Downsampler;
 
 // ImageView draws the centered crop, so Glide can keep its decoded hardware
 // bitmap without reading it back into a software CenterCrop bitmap.
@@ -26,6 +28,31 @@ final class FastImageHardware {
             current = parent instanceof View ? (View) parent : null;
         }
         return true;
+    }
+
+    // Whether these are a hardware cover request's options (see
+    // FastImageSourceSize.scaleTypeOptions).
+    static boolean requested(Options options) {
+        DownsampleStrategy strategy = options.get(DownsampleStrategy.OPTION);
+        return strategy instanceof FastImageSourceSize.Capture
+                && ((FastImageSourceSize.Capture) strategy).hardwareCover();
+    }
+
+    // What an animated image is decoded with. A hardware bitmap is for a
+    // still image: an animation's frames are drawn into software bitmaps
+    // either way. So an animated image that turns up for a hardware cover
+    // request (the request is made before the image's format is known) is
+    // decoded as for the same request without it: an animated WebP or AVIF
+    // with these options (FastImageAnimated), and a GIF cropped as Glide crops
+    // one (FastImageGif.CoverDecoder).
+    static Options animatedOptions(Options options) {
+        if (!requested(options)) return options;
+        FastImageSourceSize.Capture capture = (FastImageSourceSize.Capture) options.get(DownsampleStrategy.OPTION);
+        Options result = new Options();
+        result.putAll(options);
+        result.set(DownsampleStrategy.OPTION, capture.withoutHardwareCover());
+        result.set(Downsampler.ALLOW_HARDWARE_CONFIG, false);
+        return result;
     }
 
     private static final class BoundedCover extends DownsampleStrategy {
