@@ -1408,16 +1408,32 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 && (drawable instanceof BitmapDrawable || drawable instanceof GifDrawable);
     }
 
+    // Whether the image on screen is a hardware cover request's bitmap
+    // (FastImageHardware): the whole image, which Glide's CenterCrop would
+    // have cropped to what the view shows, so the view crops it as it draws
+    // it (see updateImageMatrix). Not that request's GIF, which is cropped
+    // (FastImageGif.CoverDecoder), nor an animated WebP, AVIF or APNG, which
+    // Glide doesn't crop for any request.
+    private boolean shownWholeForCover(@Nullable Drawable drawable) {
+        return drawable instanceof BitmapDrawable && isCentered() && shownCropped(drawable)
+                && mShownRequest != null && FastImageHardware.requested(mShownRequest.getOptions());
+    }
+
     // ImageView's own scale type for the layout, or MATRIX where the view lays
     // the image out itself (updateImageMatrix): scale-down and none at their
-    // size in dp, and contain and cover at a position other than the center.
-    private void updateScaleType() {
+    // size in dp, contain and cover at a position other than the center, and
+    // a hardware cover request's bitmap.
+    private ScaleType scaleTypeFor(@Nullable Drawable drawable) {
         ScaleType type = mLayoutScaleType;
         boolean ownSize = type == ScaleType.CENTER_INSIDE || type == ScaleType.CENTER;
         boolean positioned = !isCentered()
                 && (ownSize || type == ScaleType.FIT_CENTER || type == ScaleType.CENTER_CROP);
-        boolean laidOut = ownSize || positioned;
-        setScaleType(laidOut ? ScaleType.MATRIX : type);
+        boolean laidOut = ownSize || positioned || shownWholeForCover(drawable);
+        return laidOut ? ScaleType.MATRIX : type;
+    }
+
+    private void updateScaleType() {
+        setScaleType(scaleTypeFor(getDrawable()));
         updateImageMatrix();
     }
 
@@ -1434,6 +1450,9 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 && ((BitmapDrawable) drawable).getBitmap().getConfig() == Bitmap.Config.HARDWARE) {
             drawable = new FastImageHardwareDrawable(getResources(), (BitmapDrawable) drawable);
         }
+        // The scale type for this drawable (a hardware cover request's bitmap
+        // is laid out by the view), before ImageView lays it out.
+        setScaleType(scaleTypeFor(drawable));
         super.setImageDrawable(drawable);
         updateImageMatrix();
     }
@@ -1670,6 +1689,29 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         }
         float width;
         float height;
+        if (shownWholeForCover(drawable)) {
+            // The whole image, where Glide's CenterCrop would have cropped
+            // it: scaled to cover the view and placed as that crop is
+            // (TransformationUtils.centerCrop), so the view shows the pixels
+            // it would have got. Glide rounds the offset with
+            // (int) (offset + 0.5f), which for a crop's negative offsets
+            // isn't Math.round (ImageView's CENTER_CROP): -149 is -148 there,
+            // so ImageView would show the image a pixel off.
+            float scale;
+            float dx = 0;
+            float dy = 0;
+            if ((long) drawableWidth * (int) viewHeight > (long) (int) viewWidth * drawableHeight) {
+                scale = viewHeight / (float) drawableHeight;
+                dx = (viewWidth - drawableWidth * scale) * 0.5f;
+            } else {
+                scale = viewWidth / (float) drawableWidth;
+                dy = (viewHeight - drawableHeight * scale) * 0.5f;
+            }
+            matrix.setScale(scale, scale);
+            matrix.postTranslate((int) (dx + 0.5f), (int) (dy + 0.5f));
+            setImageMatrix(matrix);
+            return;
+        }
         if (shownCropped(drawable)) {
             // Glide cropped it to what the view shows (FastImageCrop), or for
             // the previous position or size until the image has loaded again

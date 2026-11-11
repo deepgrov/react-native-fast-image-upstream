@@ -84,6 +84,17 @@ final class FastImageSourceSize {
             this.key = key;
         }
 
+        // Whether it's a hardware cover request's (see capture).
+        boolean hardwareCover() {
+            return strategy == FastImageHardware.COVER;
+        }
+
+        // The one the same request has without hardware cover (a cover
+        // image's, downsampled: see capture).
+        Capture withoutHardwareCover() {
+            return hardwareCover() ? new Capture(vectorStrategy, vectorStrategy, key) : this;
+        }
+
         // Whether this is a decode's first call (it has the image's size; see
         // ROUNDED), recording its size.
         private boolean record(int sourceWidth, int sourceHeight, boolean vector) {

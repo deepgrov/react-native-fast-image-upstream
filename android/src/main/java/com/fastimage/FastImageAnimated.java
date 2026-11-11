@@ -199,6 +199,8 @@ final class FastImageAnimated {
         public Resource<Drawable> decode(@NonNull ByteBuffer source, int width, int height, @NonNull Options options)
                 throws IOException {
             if (!animates(options)) return still(stillDecoder, source, width, height, options);
+            // Not as a hardware cover image (FastImageHardware.animatedOptions).
+            options = FastImageHardware.animatedOptions(options);
             // Its own position, for decoding it again.
             ByteBuffer data = source.duplicate();
             Resource<Drawable> decoded = remember(glide.decode(source, width, height, options));
