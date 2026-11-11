@@ -3,23 +3,36 @@ package com.fastimage;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.Registry;
 import com.bumptech.glide.gifdecoder.GifDecoder;
 import com.bumptech.glide.gifdecoder.GifHeader;
 import com.bumptech.glide.gifdecoder.GifHeaderParser;
 import com.bumptech.glide.gifdecoder.StandardGifDecoder;
+import com.bumptech.glide.load.ImageHeaderParser;
+import com.bumptech.glide.load.Options;
+import com.bumptech.glide.load.ResourceDecoder;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.engine.Resource;
+import com.bumptech.glide.load.engine.bitmap_recycle.ArrayPool;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.UnitTransformation;
 import com.bumptech.glide.load.resource.bitmap.BitmapResource;
+import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.gif.ByteBufferGifDecoder;
 import com.bumptech.glide.load.resource.gif.GifBitmapProvider;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.load.resource.gif.GifDrawableTransformation;
+import com.bumptech.glide.load.resource.gif.StreamGifDecoder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 // Gives a view its own animation of a GIF. Glide gives every view that shows
 // the same GIF (same url and size) a GifDrawable over one frame loader (it's
@@ -32,6 +45,53 @@ import java.nio.ByteBuffer;
 // or fitted with the same transformation.
 final class FastImageGif {
     private FastImageGif() {}
+
+    // Ahead of Glide's own GIF decoders, which these use.
+    static void register(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
+        Context appContext = context.getApplicationContext();
+        List<ImageHeaderParser> parsers = registry.getImageHeaderParsers();
+        ArrayPool arrayPool = glide.getArrayPool();
+        ByteBufferGifDecoder byteBufferDecoder = new ByteBufferGifDecoder(
+                appContext, parsers, glide.getBitmapPool(), arrayPool);
+        registry.prepend(ByteBuffer.class, GifDrawable.class, new CoverDecoder<>(appContext, byteBufferDecoder));
+        registry.prepend(InputStream.class, GifDrawable.class, new CoverDecoder<>(
+                appContext, new StreamGifDecoder(parsers, byteBufferDecoder, arrayPool)));
+    }
+
+    // A GIF for a hardware cover request (FastImageHardware). Glide crops a
+    // cover image's GIF to the view's size with the request's transformation
+    // (CenterCrop, as a GifDrawableTransformation), after its GIF decoder has
+    // decoded it. A hardware cover request has no transformation (with one,
+    // its bitmap couldn't be a hardware one), so its GIF's frames would stay
+    // the size the decoder samples them to: the whole GIF, not the view's
+    // box (a 640x360 GIF in a 262x263 view at 640x360). Decoded by Glide's
+    // decoder and cropped the same way here instead, so it's the GifDrawable
+    // Glide gives without hardware cover. Other requests' GIFs go to Glide's
+    // own decoders.
+    static final class CoverDecoder<T> implements ResourceDecoder<T, GifDrawable> {
+        private final Context context;
+        private final ResourceDecoder<T, GifDrawable> glide;
+
+        CoverDecoder(Context context, ResourceDecoder<T, GifDrawable> glide) {
+            this.context = context;
+            this.glide = glide;
+        }
+
+        @Override
+        public boolean handles(@NonNull T source, @NonNull Options options) throws IOException {
+            return FastImageGlide.isRequest(options) && FastImageHardware.requested(options)
+                    && glide.handles(source, options);
+        }
+
+        @Nullable
+        @Override
+        public Resource<GifDrawable> decode(@NonNull T source, int width, int height, @NonNull Options options)
+                throws IOException {
+            Resource<GifDrawable> decoded = glide.decode(source, width, height, options);
+            if (decoded == null) return null;
+            return new GifDrawableTransformation(new CenterCrop()).transform(context, decoded, width, height);
+        }
+    }
 
     // Null if the GIF can't be decoded again (then the view shows Glide's).
     // Full size (downsample false): at the GIF's own size, or sampled down to

@@ -1,6 +1,9 @@
 {
-    "name": "react-native-fast-image",
-    "version": "10.11.0",
+    "name": "@frontia/react-native-fast-image",
+    "version": "10.11.0-frontia.1",
+    "frontiaCapabilities": {
+        "androidMaxPixelDensity": true
+    },
     "description": "FastImage, performant React Native image component.",
     "keywords": [
         "cache",
@@ -9,13 +12,13 @@
         "image",
         "priority"
     ],
-    "homepage": "https://github.com/DylanVann/react-native-fast-image#readme",
+    "homepage": "https://github.com/deepgrov/react-native-fast-image-upstream#readme",
     "bugs": {
-        "url": "https://github.com/DylanVann/react-native-fast-image/issues"
+        "url": "https://github.com/deepgrov/react-native-fast-image-upstream/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/DylanVann/react-native-fast-image.git"
+        "url": "git+https://github.com/deepgrov/react-native-fast-image-upstream.git"
     },
     "license": "(MIT AND Apache-2.0)",
     "author": "Dylan Vann <dylan@dylanvann.com> (https://dylanvann.com)",

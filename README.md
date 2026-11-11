@@ -2,6 +2,8 @@
 
 Performant React Native image component.
 
+이 저장소는 Frontia 앱이 쓰는 포크예요. 패키지와 import 경로는 `@frontia/react-native-fast-image`이고, 아래 원본 예제의 `react-native-fast-image/thumbhash`도 `@frontia/react-native-fast-image/thumbhash`로 읽어요. 기준 버전, 원본과 다른 점, 원본 변경을 받는 절차는 [UPSTREAM.md](UPSTREAM.md)에 있어요.
+
 [![Version][version-badge]][package]
 [![Downloads][downloads-badge]][npmtrends]
 [![Build Status][build-badge]][build]
@@ -431,6 +433,18 @@ Decodes a large image at about the size it's shown at, instead of at full size, 
 It doesn't change `onLoad`'s width and height (the image's own size) or the cached file. Photo library images are always decoded at about the view's size. Android 16 and later decode animated WebP at full size either way, and scale it as they draw it.
 
 If you control the images, serve them at the size they're shown (resized on your server or by an image CDN), which also saves bandwidth.
+
+---
+
+#### `maxPixelDensity`
+
+**Platforms:** Android · **Type:** `number` · **Default:** `0`
+
+The most pixels per dp an image is decoded at, on screens with more than that. On a screen with 3 pixels per dp a 300 dp wide view is 900 pixels wide: with `maxPixelDensity={2}` its image is decoded 600 pixels wide, which takes under half the memory, and the view scales it up as it draws it.
+
+For images that don't need the screen's full detail: banners, thumbnails, blurred or dimmed backgrounds. Text and fine lines in an image get softer, so leave it off where they need to stay sharp.
+
+With `0` (the default) images are decoded for the view's pixels. It does nothing on a screen with at most that many pixels per dp, or with `downsample={false}`, `imageRendering="pixelated"` or `objectFit="none"`, which don't fit the image to the view. It doesn't change the view's layout, `onLoad`'s width and height, or how `blurRadius` and `objectPosition` look.
 
 ---
 

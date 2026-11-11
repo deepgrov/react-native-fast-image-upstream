@@ -1628,6 +1628,22 @@ describe('transition', () => {
     })
 })
 
+describe('maxPixelDensity', () => {
+    it('routes the explicit cap to the background image only', () => {
+        const rendered = renderer.create(
+            <FastImageBackground
+                source={{ uri: 'https://example.com/a.jpg' }}
+                maxPixelDensity={2}
+            />,
+        ).root
+        const image = rendered.findAll(
+            (node) => node.type === ('FastImageView' as any),
+        )[0]
+        expect(image.props.maxPixelDensity).toBe(2)
+        expect(rendered.findByType(View).props.maxPixelDensity).toBeUndefined()
+    })
+})
+
 describe('downsample', () => {
     it('is passed to the native view', () => {
         const [view] = renderer
