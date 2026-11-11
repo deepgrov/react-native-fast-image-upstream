@@ -2,8 +2,6 @@
 
 Performant React Native image component.
 
-Frontia 앱의 패키지와 import 경로는 `@frontia/react-native-fast-image`예요. 아래 원본 예제의 `react-native-fast-image/thumbhash`도 `@frontia/react-native-fast-image/thumbhash`로 읽어요. 이 포크의 기준은 [DylanVann v10.11.0](https://github.com/DylanVann/react-native-fast-image/tree/v10.11.0)이에요. 새 버전은 `upstream`의 릴리스 태그를 별도 브랜치에서 일반 머지하고, Android 표시 크기와 이미지 품질을 실기기에서 비교한 뒤 반영해요.
-
 [![Version][version-badge]][package]
 [![Downloads][downloads-badge]][npmtrends]
 [![Build Status][build-badge]][build]

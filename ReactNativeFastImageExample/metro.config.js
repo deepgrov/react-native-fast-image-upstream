@@ -50,8 +50,6 @@ const config = {
         // Load the library from its source so changes show up without a build
         // (unless `scripts/verify.mts --package` installed the package).
         resolveRequest: (context, moduleName, platform) => {
-            // The shared example screens keep the upstream package import.
-            if (moduleName === 'react-native-fast-image') moduleName = pkg.name
             if (
                 moduleName === pkg.name &&
                 !process.env.FAST_IMAGE_FROM_PACKAGE

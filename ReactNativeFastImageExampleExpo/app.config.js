@@ -8,7 +8,7 @@ const path = require('path')
 // NODE_PATH from the real environment.)
 const fromPackage = !!process.env.FAST_IMAGE_FROM_PACKAGE
 function fastImagePlugin() {
-    if (fromPackage) return require('../package.json').name
+    if (fromPackage) return 'react-native-fast-image'
     const file = require.resolve('../app.plugin.js')
     const plugin = require(file)
     const nodeModules = path.join(__dirname, 'node_modules')

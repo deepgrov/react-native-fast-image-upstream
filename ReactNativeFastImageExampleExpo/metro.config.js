@@ -41,8 +41,6 @@ config.resolver.nodeModulesPaths = [path.join(__dirname, 'node_modules')]
 // the package.
 const resolveRequest = config.resolver.resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-    // The shared example screens keep the upstream package import.
-    if (moduleName === 'react-native-fast-image') moduleName = pkg.name
     if (moduleName === pkg.name && !process.env.FAST_IMAGE_FROM_PACKAGE) {
         return {
             type: 'sourceFile',
