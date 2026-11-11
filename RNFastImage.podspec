@@ -7,13 +7,13 @@ Pod::Spec.new do |s|
   s.version       = package['version']
   s.summary       = package['description']
   s.authors       = { "Dylan Vann" => "dylan@dylanvann.com" }
-  s.homepage      = "https://github.com/DylanVann/react-native-fast-image#readme"
+  s.homepage      = package['homepage']
   s.license       = "MIT"
   # React Native 0.83's minimums.
   s.platforms     = { :ios => "15.1", :tvos => "15.1" }
   s.framework     = 'UIKit'
   s.requires_arc  = true
-  s.source        = { :git => "https://github.com/DylanVann/react-native-fast-image.git", :tag => "v#{s.version}" }
+  s.source        = { :git => "https://github.com/deepgrov/react-native-fast-image-upstream.git", :tag => "v#{s.version}" }
   # common/cpp: FastImageView's and FastImageAutoView's shadow nodes (the spec is
   # interfaceOnly).
   s.source_files  = "ios/**/*.{h,m,mm}", "common/cpp/**/*.{h,cpp}"
