@@ -710,6 +710,28 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
      */
     downsample?: boolean
     /**
+     * The most pixels per dp an image is decoded at, on screens with more
+     * than that. On a screen with 3 pixels per dp a 300 dp wide view is 900
+     * pixels wide: with `maxPixelDensity={2}` its image is decoded 600 pixels
+     * wide, which takes under half the memory, and the view scales it up as
+     * it draws it.
+     *
+     * For images that don't need the screen's full detail: banners,
+     * thumbnails, blurred or dimmed backgrounds. Text and fine lines in an
+     * image get softer, so leave it off where they need to stay sharp.
+     *
+     * With `0` (the default) images are decoded for the view's pixels. It
+     * does nothing on a screen with at most that many pixels per dp, or with
+     * `downsample={false}`, `imageRendering="pixelated"` or
+     * `objectFit="none"`, which don't fit the image to the view. It doesn't
+     * change the view's layout, `onLoad`'s width and height, or how
+     * `blurRadius` and `objectPosition` look.
+     *
+     * @default 0
+     * @platform android
+     */
+    maxPixelDensity?: number
+    /**
      * How bright HDR photos (e.g. photos taken on an iPhone) can be, on
      * displays that support it:
      *

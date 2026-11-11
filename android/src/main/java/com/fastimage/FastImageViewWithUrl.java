@@ -1144,7 +1144,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 if (!byWidth) width = byHeight ? (int) (FastImageSourceSize.MAX_PIXELS / height) : screen;
                 if (!byHeight) height = byWidth ? (int) (FastImageSourceSize.MAX_PIXELS / width) : screen;
             }
-            int[] box = FastImageSourceSize.box(width, height);
+            int[] box = decodeBox(width, height);
             cb.onSizeReady(box[0], box[1]);
         }
 
@@ -1390,9 +1390,9 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // Where Glide crops a cover image: CenterCrop at the center (as without
     // objectPosition), FastImageCrop elsewhere.
     @Nullable
-    private FastImageCrop positionedCrop() {
+    private FastImageCrop positionedCrop(float pixelScale) {
         return mFitScaleType == ScaleType.CENTER_CROP && !isCentered() && !mPixelated && mDownsample
-                ? new FastImageCrop(mPositionX, mPositionXOffset, mPositionY, mPositionYOffset)
+                ? new FastImageCrop(mPositionX, mPositionXOffset * pixelScale, mPositionY, mPositionYOffset * pixelScale)
                 : null;
     }
 
@@ -1740,6 +1740,43 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // Part of the request, so a change reloads.
     private boolean mDownsample = true;
 
+    // maxPixelDensity: the most pixels per dp an image is decoded at (0, the
+    // default, is the screen's: nothing changes). Part of the request, so a
+    // change reloads.
+    private float mMaxPixelDensity;
+
+    public void setMaxPixelDensity(float value) {
+        float next = Float.isFinite(value) && value > 0 ? value : 0;
+        if (next == mMaxPixelDensity) return;
+        mMaxPixelDensity = next;
+        mNeedsReload = true;
+    }
+
+    // How much smaller than the view's pixels its image is decoded, for
+    // maxPixelDensity: 1 without it, on a screen at most that dense, and for
+    // images that aren't fitted to the view (downsample false, pixelated,
+    // objectFit none). It depends on props that reload or refit the image
+    // when they change, not on the view's size, so a resize keeps it.
+    private float decodePixelScale() {
+        if (mMaxPixelDensity == 0 || !mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
+        float density = getResources().getDisplayMetrics().density;
+        return density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+    }
+
+    // The box an image is requested for: the view's pixels (or the sides
+    // CappedSize gives an open one) scaled for maxPixelDensity, then capped
+    // (FastImageSourceSize.box). The target (so the memory cache's key) and
+    // the resize check (isResized) both use it. The view's layout, the
+    // image's own size and onLoad's stay in the view's pixels.
+    int[] decodeBox(int width, int height) {
+        float scale = decodePixelScale();
+        if (scale < 1 && width > 0 && height > 0) {
+            width = Math.max(1, Math.round(width * scale));
+            height = Math.max(1, Math.round(height * scale));
+        }
+        return FastImageSourceSize.box(width, height);
+    }
+
     public void setDownsample(boolean downsample) {
         if (downsample == mDownsample) return;
         mDownsample = downsample;
@@ -1768,8 +1805,14 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // pixelated, and the blur. A blurred animated image shows its first frame,
     // as on iOS.
     private RequestOptions renderingOptions(Object model) {
+        // With maxPixelDensity the box is smaller than the view, so what's in
+        // pixels on screen (the blur's radius, a crop's offsets, an SVG's
+        // density) is scaled to the box's pixels.
+        float pixelScale = decodePixelScale();
+        float decodeDensity = loadingDensity() * pixelScale;
+        float blurRadius = mBlurRadius * pixelScale;
         FastImageBlur blur = mBlurRadius > 0
-                ? new FastImageBlur(mBlurRadius, mFitScaleType, loadingDensity())
+                ? new FastImageBlur(blurRadius, mFitScaleType, decodeDensity)
                 : null;
         RequestOptions options;
         if (mPixelated) {
@@ -1805,8 +1848,8 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             ScaleType fit = unsized ? ScaleType.CENTER_INSIDE : uncropped ? ScaleType.FIT_CENTER : mFitScaleType;
             mLoadingUncropped = uncropped;
             mLoadingUnsized = unsized;
-            if ((uncropped || unsized) && blur != null) blur = new FastImageBlur(mBlurRadius, fit, loadingDensity());
-            FastImageCrop crop = uncropped || unsized ? null : positionedCrop();
+            if ((uncropped || unsized) && blur != null) blur = new FastImageBlur(blurRadius, fit, decodeDensity);
+            FastImageCrop crop = uncropped || unsized ? null : positionedCrop(pixelScale);
             boolean hardwareCover = FastImageHardware.allowed(this, fit, crop, blur, mDownsample);
             options = FastImageSourceSize.scaleTypeOptions(fit,
                     FastImageSourceSize.capture(fit, model, mDownsample, hardwareCover),
@@ -1816,7 +1859,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             // drawn at that size, so it's sharp (not with a blur, which hides
             // the difference).
             if (ownSize && blur == null) {
-                options = options.set(FastImageSvg.DENSITY, loadingDensity())
+                options = options.set(FastImageSvg.DENSITY, decodeDensity)
                         .set(FastImageSvg.FITS, fit == ScaleType.CENTER_INSIDE);
             }
         }
@@ -1970,7 +2013,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // Whether the image loaded, at a size the view doesn't have now: loading
     // it for the view's box would give another bitmap.
     private boolean isResized() {
-        int[] box = FastImageSourceSize.box(contentWidth(), contentHeight());
+        int[] box = decodeBox(contentWidth(), contentHeight());
         int width = box[0];
         int height = box[1];
         return requestManager != null && !mDropped && !mNeedsReload

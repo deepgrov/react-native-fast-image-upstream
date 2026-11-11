@@ -435,6 +435,11 @@ class FastImageViewManager extends SimpleViewManager<FastImageViewWithUrl>
         view.setDownsample(downsample);
     }
 
+    @Override
+    public void setMaxPixelDensity(FastImageViewWithUrl view, float maxPixelDensity) {
+        view.setMaxPixelDensity(maxPixelDensity);
+    }
+
     // iOS only: Android shows an HDR photo (a gain map) in HDR only when its
     // whole window is in HDR color mode.
     @Override
