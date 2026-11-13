@@ -1,6 +1,6 @@
 {
     "name": "@frontia/react-native-fast-image",
-    "version": "10.11.0-frontia.1",
+    "version": "10.11.0-frontia.2",
     "frontiaCapabilities": {
         "androidMaxPixelDensity": true
     },
