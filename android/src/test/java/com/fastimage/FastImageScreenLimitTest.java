@@ -146,4 +146,19 @@ public class FastImageScreenLimitTest {
         FastImageViewWithUrl unsized = view(URL, 1080, 0);
         assertArrayEquals(new int[]{1080, 8640}, unsized.decodeBox(1080, 8640));
     }
+
+    // A view whose style leaves a side open (autoSize) follows the image's
+    // shape, also once it has it: limited then, its image would be decoded
+    // again (it's decoded before the view has that shape).
+    @Test
+    public void aViewThatFollowsTheImageIsntLimited() {
+        for (int open : new int[]{FastImageViewWithUrl.AUTO_HEIGHT, FastImageViewWithUrl.AUTO_WIDTH,
+                FastImageViewWithUrl.AUTO_WIDTH | FastImageViewWithUrl.AUTO_HEIGHT}) {
+            FastImageViewWithUrl view = view(URL, 1080, 8640);
+            view.setAutoSize(open);
+            assertArrayEquals(new int[]{1080, 8640}, view.decodeBox(1080, 8640));
+            view.setAutoSize(0);
+            assertArrayEquals(limited(1080, 8640), view.decodeBox(1080, 8640));
+        }
+    }
 }

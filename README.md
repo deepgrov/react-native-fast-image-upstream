@@ -454,7 +454,7 @@ With `0` (the default) images are decoded for the view's pixels. It does nothing
 
 Whether an image whose view is longer than the screen is decoded at most the screen's length. A view many screens long (e.g. a long image shown at the screen's width) would otherwise get a bitmap its size: on a 1080 × 2340 screen a 1080 × 8640 view's is 37 MB. With the limit its box is scaled down, keeping its shape, until its longer side is the screen's longer side, and the view scales the image up as it draws it.
 
-Set it to `false` where the image's detail has to stay sharp in such a view: text or fine lines in a long image, or an image that's zoomed in on. It does nothing for views no longer than the screen, bundled images (`require`), or with `downsample={false}`, `imageRendering="pixelated"` or `objectFit="none"`, which don't fit the image to the view. With `maxPixelDensity` the box is the smaller of the two. It doesn't change the view's layout, `onLoad`'s width and height, or how `blurRadius` and `objectPosition` look.
+Set it to `false` where the image's detail has to stay sharp in such a view: text or fine lines in a long image, or an image that's zoomed in on. It does nothing for views no longer than the screen, views with a width or height that follows the image, bundled images (`require`), or with `downsample={false}`, `imageRendering="pixelated"` or `objectFit="none"`, which don't fit the image to the view. With `maxPixelDensity` the box is the smaller of the two. It doesn't change the view's layout, `onLoad`'s width and height, or how `blurRadius` and `objectPosition` look.
 
 ---
 

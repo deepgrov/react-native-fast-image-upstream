@@ -741,12 +741,13 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
      *
      * Set it to `false` where the image's detail has to stay sharp in such a
      * view: text or fine lines in a long image, or an image that's zoomed in
-     * on. It does nothing for views no longer than the screen, bundled images
-     * (`require`), or with `downsample={false}`,
-     * `imageRendering="pixelated"` or `objectFit="none"`, which don't fit
-     * the image to the view. With `maxPixelDensity` the box is the smaller of
-     * the two. It doesn't change the view's layout, `onLoad`'s width and
-     * height, or how `blurRadius` and `objectPosition` look.
+     * on. It does nothing for views no longer than the screen, views with a
+     * width or height that follows the image, bundled images (`require`), or
+     * with `downsample={false}`, `imageRendering="pixelated"` or
+     * `objectFit="none"`, which don't fit the image to the view. With
+     * `maxPixelDensity` the box is the smaller of the two. It doesn't change
+     * the view's layout, `onLoad`'s width and height, or how `blurRadius` and
+     * `objectPosition` look.
      *
      * @default true
      * @platform android

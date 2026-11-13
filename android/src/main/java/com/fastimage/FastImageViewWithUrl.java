@@ -1813,10 +1813,12 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // image shown at the screen's width, many screens tall, gets a bitmap a
     // screen long, which the view scales up as it draws it). 1 for images that
     // aren't fitted to the view (downsample false, pixelated, objectFit none).
-    // The screen's limit isn't for a bundled image (a resource), nor while a
-    // side follows the image (the box Glide gets for it then isn't the view's
-    // shape). It depends on the view's size, so a resize that keeps the box
-    // can still change it (see shownTransformScaleChanged).
+    // The screen's limit isn't for a bundled image (a resource), nor for a
+    // view whose style leaves a side open (autoSize): that side follows the
+    // image, so the box Glide gets before it's laid out isn't the view's
+    // shape, and limiting it once it is would decode the image again. It
+    // depends on the view's size, so a resize that keeps the box can still
+    // change it (see shownTransformScaleChanged).
     private float decodePixelScale() {
         if (!mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
         float density = getResources().getDisplayMetrics().density;
@@ -1825,8 +1827,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         int width = contentWidth();
         int height = contentHeight();
         if (mModel == null || (mModel instanceof Uri && FastImageSource.isResourceUri((Uri) mModel))
-                || width <= 0 || height <= 0 || laysOutOneSide() || laysOutNoSide()
-                || (laysOutPreviousImage() && followsImage())) {
+                || width <= 0 || height <= 0 || mAutoSize != 0) {
             return scale;
         }
         // The whole display's, as the device reports it to every app (not
