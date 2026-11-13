@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.ImageHeaderParserUtils;
 import com.bumptech.glide.load.MultiTransformation;
+import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
@@ -22,6 +23,7 @@ import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import com.bumptech.glide.load.resource.bitmap.Downsampler;
 import com.bumptech.glide.load.resource.bitmap.FitCenter;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.load.resource.gif.GifDrawableTransformation;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.ByteArrayInputStream;
@@ -89,10 +91,13 @@ final class FastImageSourceSize {
             return strategy == FastImageHardware.COVER;
         }
 
-        // The one the same request has without hardware cover (a cover
-        // image's, downsampled: see capture).
-        Capture withoutHardwareCover() {
-            return hardwareCover() ? new Capture(vectorStrategy, vectorStrategy, key) : this;
+        // The one an animated image is decoded with: the request's without
+        // what's for a still cover image's bitmap only (hardware cover, and
+        // COVER's limit of its own size), so an animation's frames are the
+        // size they'd be without them (a cover image's, downsampled: see
+        // capture).
+        Capture forAnimation() {
+            return hardwareCover() || strategy == COVER ? new Capture(vectorStrategy, vectorStrategy, key) : this;
         }
 
         // Whether this is a decode's first call (it has the image's size; see
@@ -154,8 +159,10 @@ final class FastImageSourceSize {
     // What RequestBuilder.into(ImageView) applies for the view's scale type
     // (it leaves a transformation that's already set alone), with the
     // downsample strategy it implies wrapped by capture, and then blur if it
-    // isn't null. Not downsampled (downsample false), the image isn't cropped
-    // or fitted to the view's size either: the view scales it as it draws it.
+    // isn't null. A cover image's still bitmap is no larger than the image's
+    // own size (COVER, FastImageCoverCrop). Not downsampled (downsample
+    // false), the image isn't cropped or fitted to the view's size either:
+    // the view scales it as it draws it.
     static RequestOptions scaleTypeOptions(
             @Nullable ImageView.ScaleType scaleType,
             Capture capture,
@@ -165,6 +172,9 @@ final class FastImageSourceSize {
             boolean hardwareCover) {
         RequestOptions options = new RequestOptions();
         BitmapTransformation transformation = null;
+        // A GIF's frames are cropped as Glide crops them, to the box: an
+        // animation's size doesn't change with COVER (see forAnimation).
+        BitmapTransformation gifTransformation = null;
         if (scaleType != null && downsample) {
             switch (scaleType) {
                 case CENTER_CROP:
@@ -172,14 +182,11 @@ final class FastImageSourceSize {
                         options = options.dontTransform().set(Downsampler.ALLOW_HARDWARE_CONFIG, true);
                         break;
                     }
-                    if (crop != null) {
-                        // At objectPosition, rather than the center.
-                        options = options.optionalTransform(crop);
-                        transformation = crop;
-                        break;
-                    }
-                    options = options.optionalCenterCrop();
-                    transformation = new CenterCrop();
+                    // At objectPosition (crop), or at the center, no larger
+                    // than the image's own size (see COVER).
+                    transformation = new FastImageCoverCrop(crop);
+                    gifTransformation = crop != null ? crop : new CenterCrop();
+                    options = options.optionalTransform(transformation);
                     break;
                 case CENTER_INSIDE:
                 case FIT_XY:
@@ -201,12 +208,67 @@ final class FastImageSourceSize {
                     ? options.optionalTransform(blur)
                     : options.optionalTransform(new MultiTransformation<>(transformation, blur));
         }
+        if (gifTransformation != null) {
+            options = options.optionalTransform(GifDrawable.class, new GifDrawableTransformation(blur == null
+                    ? gifTransformation
+                    : new MultiTransformation<>(gifTransformation, blur)));
+        }
         return options.downsample(capture);
     }
 
     static Capture capture(@Nullable ImageView.ScaleType scaleType, Object model, boolean downsample, boolean hardwareCover) {
         DownsampleStrategy strategy = strategy(scaleType);
-        return new Capture(hardwareCover ? FastImageHardware.COVER : downsample ? strategy : FULL_SIZE, strategy, String.valueOf(model));
+        DownsampleStrategy still = hardwareCover ? FastImageHardware.COVER
+                : !downsample ? FULL_SIZE
+                : scaleType == ImageView.ScaleType.CENTER_CROP ? COVER
+                : strategy;
+        return new Capture(still, strategy, String.valueOf(model));
+    }
+
+    // What an animated image is decoded with (FastImageAnimated): the
+    // request's options with forAnimation's strategy, and without hardware
+    // bitmaps for a hardware cover request (a hardware bitmap is for a still
+    // image: an animation's frames are drawn into software bitmaps either
+    // way). The request is made before the image's format is known, so an
+    // animated WebP or AVIF can turn up for a cover request's options.
+    static Options animatedOptions(Options options) {
+        DownsampleStrategy strategy = options.get(DownsampleStrategy.OPTION);
+        if (!(strategy instanceof Capture)) return options;
+        Capture capture = (Capture) strategy;
+        Capture animated = capture.forAnimation();
+        if (animated == capture) return options;
+        Options result = new Options();
+        result.putAll(options);
+        result.set(DownsampleStrategy.OPTION, animated);
+        if (capture.hardwareCover()) result.set(Downsampler.ALLOW_HARDWARE_CONFIG, false);
+        return result;
+    }
+
+    // A cover image's still bitmap: decoded to cover the box, as Glide's
+    // CENTER_OUTSIDE decodes it for CenterCrop, but no larger than the image's
+    // own size. CENTER_OUTSIDE scales an image smaller than the box up to
+    // cover it, a bitmap with more pixels than the image has (a 400x500
+    // thumbnail behind a full-screen 1080x2340 view would be 1872x2340); this
+    // one keeps it at its size, and the crop keeps it there too
+    // (FastImageCoverCrop): the view scales it up as it draws it.
+    static final DownsampleStrategy COVER = new AtMostOwnSize(DownsampleStrategy.CENTER_OUTSIDE);
+
+    private static final class AtMostOwnSize extends DownsampleStrategy {
+        private final DownsampleStrategy strategy;
+
+        AtMostOwnSize(DownsampleStrategy strategy) {
+            this.strategy = strategy;
+        }
+
+        @Override
+        public float getScaleFactor(int sourceWidth, int sourceHeight, int requestedWidth, int requestedHeight) {
+            return Math.min(1, strategy.getScaleFactor(sourceWidth, sourceHeight, requestedWidth, requestedHeight));
+        }
+
+        @Override
+        public SampleSizeRounding getSampleSizeRounding(int sourceWidth, int sourceHeight, int requestedWidth, int requestedHeight) {
+            return strategy.getSampleSizeRounding(sourceWidth, sourceHeight, requestedWidth, requestedHeight);
+        }
     }
 
     private static DownsampleStrategy strategy(@Nullable ImageView.ScaleType scaleType) {

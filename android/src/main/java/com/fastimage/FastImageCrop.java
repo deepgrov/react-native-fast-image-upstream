@@ -39,6 +39,11 @@ final class FastImageCrop extends BitmapTransformation {
         this.yOffset = yOffset;
     }
 
+    // The same crop for a box scaled by scale (its offsets scaled with it).
+    FastImageCrop scaled(float scale) {
+        return new FastImageCrop(x, xOffset * scale, y, yOffset * scale);
+    }
+
     @Override
     protected Bitmap transform(@NonNull BitmapPool pool, @NonNull Bitmap toTransform, int outWidth, int outHeight) {
         int width = toTransform.getWidth();

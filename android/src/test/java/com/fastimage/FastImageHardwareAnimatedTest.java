@@ -1,6 +1,7 @@
 package com.fastimage;
 
 import static android.widget.ImageView.ScaleType.CENTER_CROP;
+import static android.widget.ImageView.ScaleType.FIT_CENTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -229,16 +230,20 @@ public class FastImageHardwareAnimatedTest {
     }
 
     // An animated WebP or AVIF is decoded at the size its options' downsample
-    // strategy gives (Glide's AnimatedImageDecoder): for a hardware cover
-    // request, the strategy and the hardware setting of the same request
-    // without it, so also for an image hardware cover would decode smaller
-    // (FastImageHardware.MAX_PIXELS).
+    // strategy gives (Glide's AnimatedImageDecoder): for a cover request, the
+    // request's strategy without what's for a still image's bitmap only
+    // (hardware cover, and FastImageSourceSize.COVER's limit of the image's
+    // own size) and the hardware setting of the request without hardware
+    // cover, so Glide's CENTER_OUTSIDE, also for an image hardware cover
+    // would decode smaller (FastImageHardware.MAX_PIXELS) and one smaller
+    // than the box (which a still image's bitmap isn't scaled up to).
     @Test
-    public void anAnimatedImagesOptionsAreTheRequestsWithoutHardwareCover() {
+    public void anAnimatedImagesOptionsAreTheRequestsWithoutTheStillImageLimits() {
         Options hardware = cover(true).getOptions();
         Options software = cover(false).getOptions();
-        Options animated = FastImageHardware.animatedOptions(hardware);
-        assertEquals(software.get(DownsampleStrategy.OPTION), animated.get(DownsampleStrategy.OPTION));
+        Options animated = FastImageSourceSize.animatedOptions(hardware);
+        Options animatedSoftware = FastImageSourceSize.animatedOptions(software);
+        assertEquals(animatedSoftware.get(DownsampleStrategy.OPTION), animated.get(DownsampleStrategy.OPTION));
         assertFalse(animated.get(Downsampler.ALLOW_HARDWARE_CONFIG));
         assertEquals(software.get(Downsampler.ALLOW_HARDWARE_CONFIG), animated.get(Downsampler.ALLOW_HARDWARE_CONFIG));
         assertTrue(FastImageGlide.isRequest(animated));
@@ -255,12 +260,19 @@ public class FastImageHardwareAnimatedTest {
                 {1000, 100000, 1000, 1000},
                 {20, 20, 4095, 4095},
         }) {
-            float expected = software.get(DownsampleStrategy.OPTION).getScaleFactor(c[0], c[1], c[2], c[3]);
-            assertEquals(DownsampleStrategy.CENTER_OUTSIDE.getScaleFactor(c[0], c[1], c[2], c[3]), expected, 0);
+            float expected = DownsampleStrategy.CENTER_OUTSIDE.getScaleFactor(c[0], c[1], c[2], c[3]);
             assertEquals(expected, animated.get(DownsampleStrategy.OPTION).getScaleFactor(c[0], c[1], c[2], c[3]), 0);
+            assertEquals(expected,
+                    animatedSoftware.get(DownsampleStrategy.OPTION).getScaleFactor(c[0], c[1], c[2], c[3]), 0);
         }
+        // A still image in the same request: no larger than its own size.
+        assertEquals(1, software.get(DownsampleStrategy.OPTION).getScaleFactor(80, 80, 126, 126), 0);
+        assertEquals(1, hardware.get(DownsampleStrategy.OPTION).getScaleFactor(80, 80, 126, 126), 0);
         // Other requests' options are used as they are.
-        assertSame(software, FastImageHardware.animatedOptions(software));
+        Options contain = FastImageSourceSize.scaleTypeOptions(FIT_CENTER,
+                FastImageSourceSize.capture(FIT_CENTER, MODEL, true, false), null, null, true, false)
+                .set(FastImageGlide.REQUEST, true).getOptions();
+        assertSame(contain, FastImageSourceSize.animatedOptions(contain));
     }
 
     // FastImage's decoder for animated WebP and AVIF (FastImageAnimated) hands
@@ -296,15 +308,20 @@ public class FastImageHardwareAnimatedTest {
                 Class.forName("com.fastimage.FastImageAnimated$ByteBufferDecoder").asSubclass(ResourceDecoder.class),
                 ClassParameter.from(ResourceDecoder.class, glide), ClassParameter.from(ResourceDecoder.class, still));
         Options hardware = cover(true).getOptions();
+        Options animated = FastImageSourceSize.animatedOptions(cover(false).getOptions());
         assertNull(decoder.decode(ByteBuffer.wrap(new byte[0]), 1000, 1000, hardware));
         assertEquals(1, decodedWith.size());
-        assertEquals(cover(false).getOptions().get(DownsampleStrategy.OPTION),
-                decodedWith.get(0).get(DownsampleStrategy.OPTION));
+        assertEquals(animated.get(DownsampleStrategy.OPTION), decodedWith.get(0).get(DownsampleStrategy.OPTION));
         assertFalse(decodedWith.get(0).get(Downsampler.ALLOW_HARDWARE_CONFIG));
 
-        Options software = cover(false).getOptions();
-        decoder.decode(ByteBuffer.wrap(new byte[0]), 1000, 1000, software);
-        assertSame(software, decodedWith.get(1));
+        decoder.decode(ByteBuffer.wrap(new byte[0]), 1000, 1000, cover(false).getOptions());
+        assertEquals(animated.get(DownsampleStrategy.OPTION), decodedWith.get(1).get(DownsampleStrategy.OPTION));
+
+        Options contain = FastImageSourceSize.scaleTypeOptions(FIT_CENTER,
+                FastImageSourceSize.capture(FIT_CENTER, MODEL, true, false), null, null, true, false)
+                .set(FastImageGlide.REQUEST, true).getOptions();
+        decoder.decode(ByteBuffer.wrap(new byte[0]), 1000, 1000, contain);
+        assertSame(contain, decodedWith.get(2));
     }
 
     // A still image's hardware cover request is as it was: no transformation

@@ -22,7 +22,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.bumptech.glide.load.resource.bitmap.CenterCrop;
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy.SampleSizeRounding;
 import com.bumptech.glide.load.resource.bitmap.Downsampler;
@@ -134,13 +133,36 @@ public class FastImageHardwareTest {
                 {1000, 2000, 500, 500},
                 {4000, 3000, 1080, 608},
                 {1200, 4800, 1080, 2340},
-                // Smaller than the box: scaled up to cover it.
-                {100, 50, 300, 300},
+                {400, 500, 400, 500},
         }) {
             float expected = DownsampleStrategy.CENTER_OUTSIDE.getScaleFactor(c[0], c[1], c[2], c[3]);
+            assertTrue(expected <= 1);
             assertEquals(expected, cover.getScaleFactor(c[0], c[1], c[2], c[3]), 0);
         }
         assertEquals(SampleSizeRounding.QUALITY, cover.getSampleSizeRounding(2000, 1000, 500, 500));
+    }
+
+    // An image that would have to be scaled up to cover the box is decoded
+    // at its own size, as FastImageSourceSize.COVER decodes one without
+    // hardware cover: the view scales it up as it draws it.
+    @Test
+    public void anImageSmallerThanTheBoxIsDecodedAtItsOwnSize() {
+        for (int[] c : new int[][]{
+                // source width and height, box width and height
+                {100, 50, 300, 300},
+                // A thumbnail behind a full-screen view.
+                {400, 500, 1080, 2340},
+                // Covers it by one side only.
+                {200, 250, 288, 360},
+                {400, 500, 480, 600},
+                {20, 20, 4095, 4095},
+                {1080, 500, 1080, 2340},
+        }) {
+            String name = c[0] + "x" + c[1] + " for " + c[2] + "x" + c[3];
+            assertTrue(name, DownsampleStrategy.CENTER_OUTSIDE.getScaleFactor(c[0], c[1], c[2], c[3]) > 1);
+            assertEquals(name, 1, FastImageHardware.COVER.getScaleFactor(c[0], c[1], c[2], c[3]), 0);
+            assertEquals(name, 1, FastImageSourceSize.COVER.getScaleFactor(c[0], c[1], c[2], c[3]), 0);
+        }
     }
 
     // Without a crop the whole image is decoded, so one much longer than its
@@ -193,7 +215,7 @@ public class FastImageHardwareTest {
         RequestOptions software = FastImageSourceSize.scaleTypeOptions(CENTER_CROP,
                 FastImageSourceSize.capture(CENTER_CROP, model, true, false), null, null, true, false);
         assertFalse(software.getOptions().get(Downsampler.ALLOW_HARDWARE_CONFIG));
-        assertEquals(new CenterCrop(), software.getTransformations().get(Bitmap.class));
+        assertEquals(new FastImageCoverCrop(null), software.getTransformations().get(Bitmap.class));
         assertEquals(1f, software.getOptions().get(DownsampleStrategy.OPTION).getScaleFactor(1000, 100000, 1000, 1000),
                 0);
         // Two requests for one image at one size, one of each kind, are
