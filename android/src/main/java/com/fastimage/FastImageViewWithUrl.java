@@ -1927,7 +1927,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
             FastImageCrop crop = uncropped || unsized ? null : positionedCrop(pixelScale);
             boolean hardwareCover = FastImageHardware.allowed(this, fit, crop, blur, mDownsample);
             options = FastImageSourceSize.scaleTypeOptions(fit,
-                    FastImageSourceSize.capture(fit, model, mDownsample, hardwareCover),
+                    FastImageSourceSize.capture(fit, model, mDownsample, hardwareCover, crop != null),
                     crop, blur, mDownsample, hardwareCover);
             boolean ownSize = fit == ScaleType.CENTER_INSIDE || fit == ScaleType.CENTER;
             // scale-down and none show it at its own size in dp: an SVG is

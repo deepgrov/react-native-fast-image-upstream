@@ -215,7 +215,7 @@ public class FastImageHardwareTest {
         RequestOptions software = FastImageSourceSize.scaleTypeOptions(CENTER_CROP,
                 FastImageSourceSize.capture(CENTER_CROP, model, true, false), null, null, true, false);
         assertFalse(software.getOptions().get(Downsampler.ALLOW_HARDWARE_CONFIG));
-        assertEquals(new FastImageCoverCrop(null), software.getTransformations().get(Bitmap.class));
+        assertEquals(new FastImageCoverCrop(), software.getTransformations().get(Bitmap.class));
         assertEquals(1f, software.getOptions().get(DownsampleStrategy.OPTION).getScaleFactor(1000, 100000, 1000, 1000),
                 0);
         // Two requests for one image at one size, one of each kind, are

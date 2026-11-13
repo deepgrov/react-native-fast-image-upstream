@@ -183,8 +183,7 @@ public class FastImageScaleResizeTest {
         RequestBuilder<Drawable> current = ReflectionHelpers.getField(view, "mLoadingRequest");
         float scale = (float) screen / (2 * height);
         if (offset > 0) {
-            assertEquals(new FastImageCoverCrop(new FastImageCrop(.5f, offset * scale, .5f, 0)),
-                    current.getTransformations().get(Bitmap.class));
+            assertEquals(new FastImageCrop(.5f, offset * scale, .5f, 0), current.getTransformations().get(Bitmap.class));
         }
         if (blur > 0) {
             assertEquals(new MultiTransformation<>(new FitCenter(), new FastImageBlur(blur * scale, fit, 1)),
@@ -226,8 +225,7 @@ public class FastImageScaleResizeTest {
                 "renderingOptions", ClassParameter.from(Object.class, model));
         RequestBuilder<Drawable> first = base.clone().apply(options);
         if (offset > 0) {
-            assertEquals(new FastImageCoverCrop(new FastImageCrop(.5f, offset * scale, .5f, 0)),
-                    first.getTransformations().get(Bitmap.class));
+            assertEquals(new FastImageCrop(.5f, offset * scale, .5f, 0), first.getTransformations().get(Bitmap.class));
         } else if (blur > 0) {
             // (FastImageBlur only keeps a density for fits that show an image
             // at its own size.)

@@ -159,8 +159,8 @@ final class FastImageSourceSize {
     // What RequestBuilder.into(ImageView) applies for the view's scale type
     // (it leaves a transformation that's already set alone), with the
     // downsample strategy it implies wrapped by capture, and then blur if it
-    // isn't null. A cover image's still bitmap is no larger than the image's
-    // own size (COVER, FastImageCoverCrop). Not downsampled (downsample
+    // isn't null. A centered cover image's still bitmap is no larger than the
+    // image's own size (COVER, FastImageCoverCrop). Not downsampled (downsample
     // false), the image isn't cropped or fitted to the view's size either:
     // the view scales it as it draws it.
     static RequestOptions scaleTypeOptions(
@@ -182,10 +182,16 @@ final class FastImageSourceSize {
                         options = options.dontTransform().set(Downsampler.ALLOW_HARDWARE_CONFIG, true);
                         break;
                     }
-                    // At objectPosition (crop), or at the center, no larger
-                    // than the image's own size (see COVER).
-                    transformation = new FastImageCoverCrop(crop);
-                    gifTransformation = crop != null ? crop : new CenterCrop();
+                    if (crop != null) {
+                        // At objectPosition, rather than the center.
+                        options = options.optionalTransform(crop);
+                        transformation = crop;
+                        break;
+                    }
+                    // At the center, no larger than the image's own size
+                    // (see COVER).
+                    transformation = new FastImageCoverCrop();
+                    gifTransformation = new CenterCrop();
                     options = options.optionalTransform(transformation);
                     break;
                 case CENTER_INSIDE:
@@ -217,10 +223,17 @@ final class FastImageSourceSize {
     }
 
     static Capture capture(@Nullable ImageView.ScaleType scaleType, Object model, boolean downsample, boolean hardwareCover) {
+        return capture(scaleType, model, downsample, hardwareCover, false);
+    }
+
+    // positioned: a cover image at an objectPosition (FastImageCrop), which
+    // is decoded as Glide decodes one for CenterCrop.
+    static Capture capture(@Nullable ImageView.ScaleType scaleType, Object model, boolean downsample,
+            boolean hardwareCover, boolean positioned) {
         DownsampleStrategy strategy = strategy(scaleType);
         DownsampleStrategy still = hardwareCover ? FastImageHardware.COVER
                 : !downsample ? FULL_SIZE
-                : scaleType == ImageView.ScaleType.CENTER_CROP ? COVER
+                : scaleType == ImageView.ScaleType.CENTER_CROP && !positioned ? COVER
                 : strategy;
         return new Capture(still, strategy, String.valueOf(model));
     }
@@ -244,9 +257,9 @@ final class FastImageSourceSize {
         return result;
     }
 
-    // A cover image's still bitmap: decoded to cover the box, as Glide's
-    // CENTER_OUTSIDE decodes it for CenterCrop, but no larger than the image's
-    // own size. CENTER_OUTSIDE scales an image smaller than the box up to
+    // A centered cover image's still bitmap: decoded to cover the box, as
+    // Glide's CENTER_OUTSIDE decodes it for CenterCrop, but no larger than
+    // the image's own size. CENTER_OUTSIDE scales an image smaller than the box up to
     // cover it, a bitmap with more pixels than the image has (a 400x500
     // thumbnail behind a full-screen 1080x2340 view would be 1872x2340); this
     // one keeps it at its size, and the crop keeps it there too

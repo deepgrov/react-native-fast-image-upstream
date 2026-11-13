@@ -47,12 +47,14 @@ import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.List;
 
-// A cover image's still bitmap is no larger than the image's own size
-// (FastImageSourceSize.COVER, FastImageCoverCrop, and FastImageHardware.COVER
-// for hardware cover): an image smaller than the box isn't scaled up to cover
-// it, as Glide's CENTER_OUTSIDE and CenterCrop would. The view scales it up
-// as it draws it. A cover image larger than the box, other fits, animated
-// images and SVGs are decoded as before. Images are decoded with Glide's
+// A centered cover image's still bitmap is no larger than the image's own
+// size (FastImageSourceSize.COVER, FastImageCoverCrop, and
+// FastImageHardware.COVER for hardware cover): an image smaller than the box
+// isn't scaled up to cover it, as Glide's CENTER_OUTSIDE and CenterCrop
+// would. The view scales it up as it draws it, and a blur keeps its look
+// (FastImageBlur). A cover image larger than the box, one at an
+// objectPosition, other fits, animated images and SVGs are decoded as
+// before. Images are decoded with Glide's
 // Downsampler and cropped with the request's transformation, as Glide's
 // DecodeJob does, with Robolectric's native graphics.
 @RunWith(RobolectricTestRunner.class)
@@ -80,7 +82,9 @@ public class FastImageCoverOwnSizeTest {
 
     private static RequestOptions request(ImageView.ScaleType fit, boolean hardware, FastImageCrop crop,
             FastImageBlur blur) {
-        return FastImageSourceSize.scaleTypeOptions(fit, FastImageSourceSize.capture(fit, MODEL, true, hardware),
+        // As the view makes it (FastImageViewWithUrl.renderingOptions).
+        return FastImageSourceSize.scaleTypeOptions(fit,
+                FastImageSourceSize.capture(fit, MODEL, true, hardware, crop != null),
                 crop, blur, true, hardware).set(FastImageGlide.REQUEST, true);
     }
 
@@ -139,12 +143,11 @@ public class FastImageCoverOwnSizeTest {
     // without hardware cover): decoded at 400x500, not 1872x2340, and cropped
     // to the view's shape at that size, 231x500 (0.46 MB, where Glide's
     // CENTER_OUTSIDE and CenterCrop give 1080x2340, 10 MB, after a 17.5 MB
-    // decode). Blurred at that size too.
+    // decode).
     @Test
     public void aCoverImageSmallerThanTheBoxIsntScaledUp() throws Exception {
         FastImageBlur blur = new FastImageBlur(24, CENTER_CROP, 1);
         assertArrayEquals(new int[]{400, 500}, size(decode(request(CENTER_CROP, false, null, blur), 400, 500, 1080, 2340)));
-        assertArrayEquals(new int[]{231, 500}, size(load(request(CENTER_CROP, false, null, blur), 400, 500, 1080, 2340)));
         assertArrayEquals(new int[]{231, 500}, size(load(request(CENTER_CROP, false, null, null), 400, 500, 1080, 2340)));
         // Small images in a card's box, by one side or both.
         assertArrayEquals(new int[]{200, 250}, size(load(request(CENTER_CROP, false, null, null), 200, 250, 288, 360)));
@@ -187,41 +190,53 @@ public class FastImageCoverOwnSizeTest {
 
         Bitmap bitmap = pattern(400, 500);
         Bitmap cropped = TransformationUtils.centerCrop(glide.getBitmapPool(), bitmap, 231, 500);
-        Bitmap ours = new FastImageCoverCrop(null).transform(glide.getBitmapPool(), bitmap, 1080, 2340);
+        Bitmap ours = new FastImageCoverCrop().transform(glide.getBitmapPool(), bitmap, 1080, 2340);
         assertArrayEquals(pixels(Bitmap.createBitmap(bitmap, 84, 0, 231, 500)), pixels(cropped));
         assertArrayEquals(pixels(cropped), pixels(ours));
     }
 
-    // At an objectPosition, the same, with its offsets (in the box's pixels)
-    // at the bitmap's scale.
+    // Blurred, the smaller bitmap keeps the blur's look: at its own size a
+    // radius would be that much smaller in its pixels, and a small one rounds
+    // to no blur at all. It's blurred where its box is at least 11 pixels,
+    // scaled up from its own size by no more than that needs.
     @Test
-    public void aPositionedCropOfASmallerBitmapHasItsOffsetsScaled() {
-        Bitmap bitmap = pattern(400, 500);
-        FastImageCrop crop = new FastImageCrop(0, 46.8f, 1, -23.4f);
-        Bitmap ours = new FastImageCoverCrop(crop).transform(glide.getBitmapPool(), bitmap, 1080, 2340);
-        // 2340 / 500: the box at the bitmap's scale is 231x500, the offsets 10
-        // and -5.
-        Bitmap expected = new FastImageCrop(0, 10, 1, -5).transform(glide.getBitmapPool(), bitmap, 231, 500);
-        assertArrayEquals(new int[]{231, 500}, size(ours));
-        assertArrayEquals(pixels(expected), pixels(ours));
-        // A bitmap that covers the box: FastImageCrop as it is.
-        Bitmap large = pattern(1200, 2600);
-        assertArrayEquals(pixels(crop.transform(glide.getBitmapPool(), large, 1080, 2340)),
-                pixels(new FastImageCoverCrop(crop).transform(glide.getBitmapPool(), large, 1080, 2340)));
+    public void aBlurredSmallerBitmapKeepsItsBlur() throws Exception {
+        // 24 pixels on screen: a box of 23 at 1080x2340, 11 at about twice
+        // the bitmap's size (467x1012, 1.9 MB).
+        Bitmap blurred = load(request(CENTER_CROP, false, null, new FastImageBlur(24, CENTER_CROP, 1)),
+                400, 500, 1080, 2340);
+        assertTrue(blurred.getWidth() > 231 && blurred.getWidth() < 1080 / 2);
+        assertEquals(231 / 500f, blurred.getWidth() / (float) blurred.getHeight(), .01f);
+        // A blur whose box at the shown size is at most 11 pixels: blurred at
+        // the shown size, as before (a 20x20 image in a 126x126 view).
+        Bitmap shown = load(request(CENTER_CROP, false, null, new FastImageBlur(11.7f, CENTER_CROP, 1)),
+                20, 20, 126, 126);
+        assertArrayEquals(new int[]{126, 126}, size(shown));
+        // A large radius: no larger than its own size needs.
+        Bitmap large = load(request(CENTER_CROP, false, null, new FastImageBlur(120, CENTER_CROP, 1)),
+                400, 500, 1080, 2340);
+        assertArrayEquals(new int[]{231, 500}, size(large));
+    }
+
+    // At an objectPosition (FastImageCrop), decoded and cropped as before:
+    // to cover the box.
+    @Test
+    public void aPositionedCoverImageIsCroppedAsBefore() throws Exception {
+        FastImageCrop crop = new FastImageCrop(0, 10, 1, -5);
+        RequestOptions positioned = request(CENTER_CROP, false, crop, null);
+        assertEquals(crop, positioned.getTransformations().get(Bitmap.class));
+        assertArrayEquals(new int[]{1872, 2340}, size(decode(positioned, 400, 500, 1080, 2340)));
+        assertArrayEquals(new int[]{1080, 2340}, size(load(positioned, 400, 500, 1080, 2340)));
     }
 
     // Glide's memory and disk caches key a transformed image by its
-    // transformation: this crop isn't CenterCrop's or FastImageCrop's.
+    // transformation: this crop isn't CenterCrop's.
     @Test
     public void theCropIsItsOwnInGlidesCacheKeys() throws Exception {
-        assertEquals(new FastImageCoverCrop(null), new FastImageCoverCrop(null));
-        assertEquals(new FastImageCoverCrop(null).hashCode(), new FastImageCoverCrop(null).hashCode());
-        FastImageCrop crop = new FastImageCrop(0, 1, 1, 0);
-        assertEquals(new FastImageCoverCrop(crop), new FastImageCoverCrop(new FastImageCrop(0, 1, 1, 0)));
-        assertNotEquals(new FastImageCoverCrop(null), new FastImageCoverCrop(crop));
-        assertNotEquals(new CenterCrop(), new FastImageCoverCrop(null));
-        assertNotEquals(digest(new CenterCrop()), digest(new FastImageCoverCrop(null)));
-        assertNotEquals(digest(crop), digest(new FastImageCoverCrop(crop)));
+        assertEquals(new FastImageCoverCrop(), new FastImageCoverCrop());
+        assertEquals(new FastImageCoverCrop().hashCode(), new FastImageCoverCrop().hashCode());
+        assertNotEquals(new CenterCrop(), new FastImageCoverCrop());
+        assertNotEquals(digest(new CenterCrop()), digest(new FastImageCoverCrop()));
     }
 
     private static String digest(Transformation<Bitmap> transformation) throws Exception {
@@ -246,11 +261,7 @@ public class FastImageCoverOwnSizeTest {
                 capture.forAnimation().getScaleFactor(400, 500, 1080, 2340), 0);
         assertEquals(new GifDrawableTransformation(new CenterCrop()),
                 software.getTransformations().get(GifDrawable.class));
-        FastImageCrop crop = new FastImageCrop(0, 0, 0, 0);
-        assertEquals(new GifDrawableTransformation(crop),
-                request(CENTER_CROP, false, crop, null).getTransformations().get(GifDrawable.class));
-        assertEquals(new FastImageCoverCrop(crop),
-                request(CENTER_CROP, false, crop, null).getTransformations().get(Bitmap.class));
+        assertEquals(new FastImageCoverCrop(), software.getTransformations().get(Bitmap.class));
         assertFalse(software.isTransformationRequired());
         assertTrue(software.isTransformationSet());
     }
