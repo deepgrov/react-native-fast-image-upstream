@@ -28,6 +28,7 @@ const IMAGE_KEYS: Record<ImageKey, true> = {
     transition: true,
     downsample: true,
     maxPixelDensity: true,
+    limitToScreen: true,
     dynamicRangeLimit: true,
     blurRadius: true,
     tintColor: true,

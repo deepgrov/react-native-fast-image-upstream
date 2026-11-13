@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -20,6 +21,7 @@ import android.graphics.drawable.AnimatedImageDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -1794,19 +1796,48 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         mNeedsReload = true;
     }
 
-    // How much smaller than the view's pixels its image is decoded, for
-    // maxPixelDensity: 1 without it, on a screen at most that dense, and for
-    // images that aren't fitted to the view (downsample false, pixelated,
-    // objectFit none). It depends on props that reload or refit the image
-    // when they change, not on the view's size, so a resize keeps it.
+    // limitToScreen: an image whose view is longer than the screen is
+    // decoded at most the screen's length (see decodePixelScale). On by
+    // default. Part of the request, so a change reloads.
+    private boolean mLimitToScreen = true;
+
+    public void setLimitToScreen(boolean value) {
+        if (value == mLimitToScreen) return;
+        mLimitToScreen = value;
+        mNeedsReload = true;
+    }
+
+    // How much smaller than the view's pixels its image is decoded: for
+    // maxPixelDensity (on a screen denser than it), and for limitToScreen, so
+    // that the box's longer side is at most the screen's longer side (a long
+    // image shown at the screen's width, many screens tall, gets a bitmap a
+    // screen long, which the view scales up as it draws it). 1 for images that
+    // aren't fitted to the view (downsample false, pixelated, objectFit none).
+    // The screen's limit isn't for a bundled image (a resource), nor while a
+    // side follows the image (the box Glide gets for it then isn't the view's
+    // shape). It depends on the view's size, so a resize that keeps the box
+    // can still change it (see shownTransformScaleChanged).
     private float decodePixelScale() {
-        if (mMaxPixelDensity == 0 || !mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
+        if (!mDownsample || mPixelated || mFitScaleType == ScaleType.CENTER) return 1;
         float density = getResources().getDisplayMetrics().density;
-        return density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        float scale = mMaxPixelDensity > 0 && density > mMaxPixelDensity ? mMaxPixelDensity / density : 1;
+        if (!mLimitToScreen) return scale;
+        int width = contentWidth();
+        int height = contentHeight();
+        if (mModel == null || (mModel instanceof Uri && FastImageSource.isResourceUri((Uri) mModel))
+                || width <= 0 || height <= 0 || laysOutOneSide() || laysOutNoSide()
+                || (laysOutPreviousImage() && followsImage())) {
+            return scale;
+        }
+        // The whole display's, as the device reports it to every app (not
+        // this window's).
+        DisplayMetrics display = Resources.getSystem().getDisplayMetrics();
+        int screen = Math.max(display.widthPixels, display.heightPixels);
+        return screen > 0 ? Math.min(scale, (float) screen / Math.max(width, height)) : scale;
     }
 
     // The box an image is requested for: the view's pixels (or the sides
-    // CappedSize gives an open one) scaled for maxPixelDensity, then capped
+    // CappedSize gives an open one) scaled by decodePixelScale, then capped
     // (FastImageSourceSize.box). The target (so the memory cache's key) and
     // the resize check (isResized) both use it. The view's layout, the
     // image's own size and onLoad's stay in the view's pixels.
@@ -1847,10 +1878,11 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     // pixelated, and the blur. A blurred animated image shows its first frame,
     // as on iOS.
     private RequestOptions renderingOptions(Object model) {
-        // With maxPixelDensity the box is smaller than the view, so what's in
-        // pixels on screen (the blur's radius, a crop's offsets, an SVG's
-        // density) is scaled to the box's pixels.
+        // With maxPixelDensity or limitToScreen the box can be smaller than
+        // the view, so what's in pixels on screen (the blur's radius, a crop's
+        // offsets, an SVG's density) is scaled to the box's pixels.
         float pixelScale = decodePixelScale();
+        mLoadingPixelScale = pixelScale;
         float decodeDensity = loadingDensity() * pixelScale;
         float blurRadius = mBlurRadius * pixelScale;
         FastImageBlur blur = mBlurRadius > 0
@@ -1943,6 +1975,9 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
     private int mShownHeight = 0;
     private int mLoadingWidth = 0;
     private int mLoadingHeight = 0;
+    // The decodePixelScale the shown and the loading image's request has.
+    private float mLoadingPixelScale = 1;
+    private float mShownPixelScale = 1;
     // Whether the shown and the loading image are cover ones fitted instead
     // of cropped (see renderingOptions).
     private boolean mShownUncropped = false;
@@ -2000,6 +2035,7 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         mShownRequest = mLoadingRequest;
         mShownWidth = mLoadingWidth;
         mShownHeight = mLoadingHeight;
+        mShownPixelScale = mLoadingPixelScale;
         mShownUncropped = mLoadingUncropped;
         mShownUnsized = mLoadingUnsized;
         mShownVector = FastImageSourceSize.isVector(mModel);
@@ -2069,9 +2105,22 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
                 && !givesShownBitmap(width, height);
     }
 
+    // Whether the shown image's request has what's in pixels on screen (a
+    // blur's radius, a crop's offsets, an SVG's density at its own size)
+    // scaled by another decodePixelScale than the view's now: limitToScreen's
+    // depends on the view's size, and a box capped by the screen can stay the
+    // same when the view grows.
+    private boolean shownTransformScaleChanged() {
+        boolean offsetCrop = mFitScaleType == ScaleType.CENTER_CROP && !mShownUncropped && !mShownUnsized
+                && (mPositionXOffset != 0 || mPositionYOffset != 0);
+        boolean ownSizeSvg = mShownVector && (mFitScaleType == ScaleType.CENTER_INSIDE || mShownUnsized);
+        return (mBlurRadius > 0 || offsetCrop || ownSizeSvg) && mShownPixelScale != decodePixelScale();
+    }
+
     // Whether loading the shown image for a box (in pixels) would give the
     // bitmap the view shows, so there's nothing to load again.
     private boolean givesShownBitmap(int width, int height) {
+        if (shownTransformScaleChanged()) return false;
         boolean sameBox = width == mShownWidth && height == mShownHeight;
         // A cover image fitted while the view had the previous image's shape
         // or no size (see renderingOptions), in a view that didn't take its
@@ -2191,11 +2240,12 @@ class FastImageViewWithUrl extends AppCompatImageView implements ReactPointerEve
         // A cover image fitted before the view had its size is cropped now,
         // and one loaded before it had any size is loaded for it.
         RequestBuilder<Drawable> request = shown;
-        if ((mShownUncropped || mShownUnsized) && mBaseRequest != null) {
+        if (mBaseRequest != null && (mShownUncropped || mShownUnsized || shownTransformScaleChanged())) {
             request = mBaseRequest.clone().apply(renderingOptions(mModel));
         } else {
             mLoadingUncropped = mShownUncropped;
             mLoadingUnsized = mShownUnsized;
+            mLoadingPixelScale = mShownPixelScale;
         }
         RequestBuilder<Drawable> builder = request.clone()
                 .error(current.clone())
