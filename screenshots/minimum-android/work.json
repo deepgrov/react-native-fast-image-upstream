@@ -17,7 +17,7 @@
         "request /picsum/1020-120x120.jpg": 1
     },
     "auto-size-more": {
-        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 420x420 at 840x420": 1,
+        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 420x420 at 600x300": 1,
         "decode http://10.0.2.2:8090/tall-bands.png 200x1600 for 336x49932 at 336x2688": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-fixed=RUN 1600x1000 for 336x210 at 336x210": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-open=RUN 1600x1000 for 336x49932 at 336x210": 1,
@@ -133,7 +133,7 @@
         "decode http://10.0.2.2:8090/odd-height.png?auto-size-fill-rounding=RUN 336x201 for 168x99864 at 168x101": 1,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048x2048 for 2400x2400 at 2048x2048": 1,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048x2048 for 630x630 at 630x630": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?auto-size-stretched-change=RUN 120x120 for 630x168 at 630x630": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?auto-size-stretched-change=RUN 120x120 for 630x168 at 120x120": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-stretched-change=RUN 1600x1000 for 630x168 at 630x394": 1,
         "layout-state http://10.0.2.2:8090/odd-height.png?auto-size-fill-rounding=RUN 336.0x201.0 main": 4,
         "layout-state http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048.0x2048.0 main": 1,
@@ -210,7 +210,7 @@
         "request /does-not-exist.png": 1
     },
     "layout": {
-        "decode android.resource://com.reactnativefastimageexampleminimum/RUN 80x80 for 126x126 at 126x126": 1,
+        "decode android.resource://com.reactnativefastimageexampleminimum/RUN 80x80 for 126x126 at 80x80": 1,
         "decode file:///android_asset/fastimage-logo.png 1000x1000 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/jellyfish.gif gif at 126x70": 1,
         "decode http://10.0.2.2:8090/logo.png 1000x1000 for 126x126 at 126x126": 2,
@@ -298,13 +298,13 @@
         "decode http://10.0.2.2:8090/chunked/picsum/1015-2048x2048.jpg?run=RUN 2048x2048 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/cookie/logo.png?run=RUN 1000x1000 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/gzip/picsum/1015-2048x2048.jpg?run=RUN 2048x2048 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/max-age/formats/quadrants.avif?web-avif=RUN 80x80 for 126x126 at 126x126": 2,
+        "decode http://10.0.2.2:8090/max-age/formats/quadrants.avif?web-avif=RUN 80x80 for 126x126 at 80x80": 2,
         "decode http://10.0.2.2:8090/max-age/picsum/1025-200x200.jpg?web=RUN 200x200 for 126x126 at 126x126": 2,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?progress=RUN 2048x2048 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 126x126 at 252x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1021-120x120.jpg 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1021-120x120.jpg 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg 120x120 for 126x126 at 120x120": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg 200x200 for 126x126 at 126x126": 1,
         "load http://10.0.2.2:8090/chunked/picsum/1015-2048x2048.jpg?run=RUN source main": 1,
         "load http://10.0.2.2:8090/cookie/logo.png?run=RUN source main": 1,
@@ -331,7 +331,7 @@
     },
     "preload": {
         "decode http://10.0.2.2:8090/bad-once/picsum/1025-200x200.jpg?preload-retry=RUN-0 200x200 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/no-token/picsum/1022-120x120.jpg?run=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/no-token/picsum/1022-120x120.jpg?run=RUN 120x120 for 126x126 at 120x120": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg 200x200 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?preload-disk=RUN 200x200 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?reuse=RUN 200x200 for 126x126 at 126x126": 1,
@@ -454,10 +454,10 @@
         "load http://10.0.2.2:8090/picsum/1025-200x200.jpg?only-if-cached-miss=RUN source main": 1
     },
     "cache-path": {
-        "decode cache-path-key-RUN 120x120 for 126x126 at 126x126": 1,
-        "decode file:///data/user/0/com.reactnativefastimageexampleminimum/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 126x126": 4,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-space=RUN&name=a b 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode cache-path-key-RUN 120x120 for 126x126 at 120x120": 1,
+        "decode file:///data/user/0/com.reactnativefastimageexampleminimum/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 120x120": 4,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-space=RUN&name=a b 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path=RUN 120x120 for 126x126 at 120x120": 1,
         "load cache-path-key-RUN source main": 1,
         "load file:///data/user/0/com.reactnativefastimageexampleminimum/cache/image_manager_disk_cache/HASH.0 source main": 4,
         "load http://10.0.2.2:8090/does-not-exist.jpg?cache-path-404=RUN cache-path": 1,
@@ -471,10 +471,10 @@
         "request /picsum/1022-120x120.jpg?cache-path=RUN": 1
     },
     "write-to-cache": {
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache-avif=RUN 80x80 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache=RUN 120x120 for 126x126 at 126x126": 1,
-        "decode write-to-cache-key-only-RUN 120x120 for 126x126 at 126x126": 1,
-        "decode write-to-cache-key-RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache-avif=RUN 80x80 for 126x126 at 80x80": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache=RUN 120x120 for 126x126 at 120x120": 1,
+        "decode write-to-cache-key-only-RUN 120x120 for 126x126 at 120x120": 1,
+        "decode write-to-cache-key-RUN 120x120 for 126x126 at 120x120": 1,
         "load http://10.0.2.2:8090/formats/quadrants.avif?write-to-cache-avif-file=RUN cache-path": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?write-to-cache-cached-file=RUN cache-path": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?write-to-cache-file=RUN cache-path": 1,
@@ -508,9 +508,9 @@
         "request /cyan.png?fade-memory=RUN": 1
     },
     "thumbhash": {
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN 120x120 for 252x189 at 252x252": 1,
-        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 120x120 for 252x189 at 252x252": 1,
-        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-placeholder-late-RUN-0&delay=50 120x120 for 252x189 at 252x252": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN 120x120 for 252x189 at 120x120": 1,
+        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 120x120 for 252x189 at 120x120": 1,
+        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-placeholder-late-RUN-0&delay=50 120x120 for 252x189 at 120x120": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN source main": 1,
         "load http://10.0.2.2:8091/does-not-exist.jpg?thumbhash-fails=RUN&delay=50 source main": 1,
         "load http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 source main": 1,
