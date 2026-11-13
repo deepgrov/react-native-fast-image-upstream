@@ -113,6 +113,7 @@ function FastImageBase({
     transition: _transition,
     downsample: _downsample,
     maxPixelDensity: _maxPixelDensity,
+    limitToScreen: _limitToScreen,
     onProgress: _onProgress,
     ...props
 }: FastImageProps & { forwardedRef: React.Ref<any> }) {

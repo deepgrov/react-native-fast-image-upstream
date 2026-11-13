@@ -17,7 +17,7 @@
         "request /picsum/1020-120x120.jpg": 1
     },
     "auto-size-more": {
-        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 420x420 at 840x420": 1,
+        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 420x420 at 600x300": 1,
         "decode http://10.0.2.2:8090/tall-bands.png 200x1600 for 336x49932 at 336x2688": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-fixed=RUN 1600x1000 for 336x210 at 336x210": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-open=RUN 1600x1000 for 336x49932 at 336x210": 1,
@@ -133,7 +133,7 @@
         "decode http://10.0.2.2:8090/odd-height.png?auto-size-fill-rounding=RUN 336x201 for 168x99864 at 168x101": 1,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048x2048 for 2400x2400 at 2048x2048": 1,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048x2048 for 630x630 at 630x630": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?auto-size-stretched-change=RUN 120x120 for 630x168 at 630x630": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?auto-size-stretched-change=RUN 120x120 for 630x168 at 120x120": 1,
         "decode http://10.0.2.2:8090/text-page.png?auto-size-stretched-change=RUN 1600x1000 for 630x168 at 630x394": 1,
         "layout-state http://10.0.2.2:8090/odd-height.png?auto-size-fill-rounding=RUN 336.0x201.0 main": 4,
         "layout-state http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?auto-size-natural-large=RUN 2048.0x2048.0 main": 1,
@@ -234,7 +234,7 @@
         "request /picsum/1021-120x120.jpg": 1
     },
     "layout": {
-        "decode android.resource://com.reactnativefastimageexample/RUN 80x80 for 126x126 at 126x126": 1,
+        "decode android.resource://com.reactnativefastimageexample/RUN 80x80 for 126x126 at 80x80": 1,
         "decode file:///android_asset/fastimage-logo.png 1000x1000 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/jellyfish.gif gif at 126x70": 1,
         "decode http://10.0.2.2:8090/logo.png 1000x1000 for 126x126 at 126x126": 2,
@@ -342,8 +342,9 @@
         "request /text-page.png": 1
     },
     "blur": {
+        "blur - 100x100 to 111x111 box 11": 1,
         "blur - 168x168 to 168x168 box 11": 1,
-        "blur - 168x168 to 168x168 box 15": 5,
+        "blur - 168x168 to 168x168 box 15": 4,
         "decode http://10.0.2.2:8090/jellyfish.gif 500x281 for 168x168 at 299x168": 1,
         "decode http://10.0.2.2:8090/logo.png 1000x1000 for 168x168 at 168x168": 1,
         "decode http://10.0.2.2:8090/picsum/1018-1024x1024.jpg 1024x1024 for 168x168 at 168x168": 2,
@@ -354,7 +355,7 @@
         "decode http://10.0.2.2:8090/quadrants.png?blur-fill-grow=RUN 20x20 for 126x126 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?blur-fill-grow=RUN 20x20 for 63x63 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?blur-fill-grow=RUN 20x20 for 84x84 at 20x20": 1,
-        "decode http://localhost:8081/assets/src/images/fields.jpg?platform=android&hash=HASH 100x100 for 168x168 at 168x168": 1,
+        "decode http://localhost:8081/assets/src/images/fields.jpg?platform=android&hash=HASH 100x100 for 168x168 at 100x100": 1,
         "load http://10.0.2.2:8090/does-not-exist.png source main": 1,
         "load http://10.0.2.2:8090/jellyfish.gif source main": 1,
         "load http://10.0.2.2:8090/logo.png source main": 1,
@@ -531,22 +532,22 @@
         "request /text-page.png": 1
     },
     "downsample-hidden": {
-        "blur - 126x126 to 126x126 box 11": 2,
         "blur - 126x63 to 126x63 box 5": 2,
+        "blur - 20x20 to 126x126 box 11": 2,
         "blur - 20x20 to 20x20 box 3": 1,
         "blur - 20x20 to 20x20 box 5": 1,
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?downsample-blur-no-size=RUN 600x300 for 126x133152 at 126x63": 1,
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?downsample-blur-no-size=RUN 600x300 for 126x63 at 126x63": 1,
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?downsample-blur-sized=RUN 600x300 for 126x63 at 126x63": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?downsample-natural-size=RUN 200x200 for 126x133152 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?downsample-natural-size=RUN 200x200 for 525x525 at 525x525": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?downsample-natural-size=RUN 200x200 for 525x525 at 200x200": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-blur-grow=RUN 20x20 for 63x63 at 20x20": 1,
-        "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden-blur=RUN 20x20 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden-blur=RUN 20x20 for 126x126 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden-blur=RUN 20x20 for 2400x2400 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden-pixelated=RUN 20x20 for 2400x2400 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden-position=RUN 20x20 for 2400x2400 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-hidden=RUN 20x20 for 2400x2400 at 20x20": 1,
-        "decode http://10.0.2.2:8090/quadrants.png?downsample-shown-blur=RUN 20x20 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?downsample-shown-blur=RUN 20x20 for 126x126 at 20x20": 1,
         "decode http://10.0.2.2:8090/quadrants.png?downsample-shown-position=RUN 20x20 for 126x63 at 126x126": 1,
         "load http://10.0.2.2:8090/picsum/1018-600x300.jpg?downsample-blur-no-size=RUN source main": 1,
         "load http://10.0.2.2:8090/picsum/1018-600x300.jpg?downsample-blur-sized=RUN source main": 1,
@@ -579,11 +580,11 @@
         "request /text-page.png?case=downsample-zoom": 1
     },
     "large-view": {
-        "decode http://10.0.2.2:8090/loop-once.gif?case=large-view-gif gif at 4095x4095": 1,
-        "decode http://10.0.2.2:8090/quadrants.png?case=large-view 20x20 for 4095x4095 at 2895x2895": 1,
-        "decode http://10.0.2.2:8090/quadrants.png?case=large-view-fade 20x20 for 4095x4095 at 2895x2895": 2,
-        "decode http://10.0.2.2:8090/quadrants.png?case=large-view-fade-2 20x20 for 4095x4095 at 2895x2895": 1,
-        "decode http://10.0.2.2:8091/quadrants.png?case=large-view-placeholder&delay=600 20x20 for 4095x4095 at 2895x2895": 1,
+        "decode http://10.0.2.2:8090/loop-once.gif?case=large-view-gif gif at 2400x2400": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?case=large-view 20x20 for 2400x2400 at 20x20": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?case=large-view-fade 20x20 for 2400x2400 at 20x20": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?case=large-view-fade-2 20x20 for 2400x2400 at 20x20": 1,
+        "decode http://10.0.2.2:8091/quadrants.png?case=large-view-placeholder&delay=600 20x20 for 2400x2400 at 20x20": 1,
         "load http://10.0.2.2:8090/logo.png?case=large-view-placeholder url-placeholder main": 1,
         "load http://10.0.2.2:8090/loop-once.gif?case=large-view-gif source main": 1,
         "load http://10.0.2.2:8090/quadrants.png?case=large-view source main": 1,
@@ -608,13 +609,13 @@
         "decode http://10.0.2.2:8090/chunked/picsum/1015-2048x2048.jpg?run=RUN 2048x2048 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/cookie/logo.png?run=RUN 1000x1000 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/gzip/picsum/1015-2048x2048.jpg?run=RUN 2048x2048 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/max-age/formats/quadrants.avif?web-avif=RUN 80x80 for 126x126 at 126x126": 2,
+        "decode http://10.0.2.2:8090/max-age/formats/quadrants.avif?web-avif=RUN 80x80 for 126x126 at 80x80": 2,
         "decode http://10.0.2.2:8090/max-age/picsum/1025-200x200.jpg?web=RUN 200x200 for 126x126 at 126x126": 2,
         "decode http://10.0.2.2:8090/picsum/1015-2048x2048.jpg?progress=RUN 2048x2048 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg 600x300 for 126x126 at 252x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1021-120x120.jpg 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1021-120x120.jpg 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg 120x120 for 126x126 at 120x120": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg 200x200 for 126x126 at 126x126": 1,
         "load http://10.0.2.2:8090/chunked/picsum/1015-2048x2048.jpg?run=RUN source main": 1,
         "load http://10.0.2.2:8090/cookie/logo.png?run=RUN source main": 1,
@@ -640,7 +641,7 @@
         "request /picsum/1025-200x200.jpg": 1
     },
     "progress-data-uri": {
-        "decode data:(126) 8x8 for 126x126 at 126x126": 1,
+        "decode data:(126) 8x8 for 126x126 at 8x8": 1,
         "load data:(126) source main": 1
     },
     "progress-by-url": {
@@ -796,7 +797,7 @@
     },
     "preload": {
         "decode http://10.0.2.2:8090/bad-once/picsum/1025-200x200.jpg?preload-retry=RUN-0 200x200 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/no-token/picsum/1022-120x120.jpg?run=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/no-token/picsum/1022-120x120.jpg?run=RUN 120x120 for 126x126 at 120x120": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg 200x200 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?preload-disk=RUN 200x200 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?reuse=RUN 200x200 for 126x126 at 126x126": 1,
@@ -1032,7 +1033,7 @@
     "disk-cache": {
         "decode http://10.0.2.2:8090/max-age/picsum/1025-200x200.jpg?no-disk-web=RUN 200x200 for 126x126 at 126x126": 2,
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?no-disk=RUN 200x200 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?no-disk=RUN 200x200 for 231x231 at 231x231": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?no-disk=RUN 200x200 for 231x231 at 200x200": 1,
         "load http://10.0.2.2:8090/max-age/picsum/1025-200x200.jpg?no-disk-web=RUN preload main": 1,
         "load http://10.0.2.2:8090/max-age/picsum/1025-200x200.jpg?no-disk-web=RUN source main": 2,
         "load http://10.0.2.2:8090/picsum/1025-200x200.jpg?no-disk=RUN source main": 3,
@@ -1040,10 +1041,10 @@
         "request /picsum/1025-200x200.jpg?no-disk=RUN": 2
     },
     "cache-path": {
-        "decode cache-path-key-RUN 120x120 for 126x126 at 126x126": 1,
-        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 126x126": 4,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-space=RUN&name=a b 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode cache-path-key-RUN 120x120 for 126x126 at 120x120": 1,
+        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 120x120": 4,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-space=RUN&name=a b 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path=RUN 120x120 for 126x126 at 120x120": 1,
         "load cache-path-key-RUN source main": 1,
         "load file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 source main": 4,
         "load http://10.0.2.2:8090/does-not-exist.jpg?cache-path-404=RUN cache-path": 1,
@@ -1057,13 +1058,13 @@
         "request /picsum/1022-120x120.jpg?cache-path=RUN": 1
     },
     "cache-path-more": {
-        "decode cache-path-key-only-RUN 120x120 for 126x126 at 126x126": 1,
-        "decode file:///data/user/0/com.reactnativefastimageexample/cache/fast-image-http-cache/HASH.1 120x120 for 126x126 at 126x126": 2,
-        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 126x126": 2,
-        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 8x8 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/max-age/picsum/1022-120x120.jpg?cache-path-web-cache-only=RUN 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/max-age/picsum/1022-120x120.jpg?cache-path-web=RUN 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8091/picsum/1022-120x120.jpg?group=cache-path-while-loading-RUN&delay=150 120x120 for 126x126 at 126x126": 1,
+        "decode cache-path-key-only-RUN 120x120 for 126x126 at 120x120": 1,
+        "decode file:///data/user/0/com.reactnativefastimageexample/cache/fast-image-http-cache/HASH.1 120x120 for 126x126 at 120x120": 2,
+        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 120x120 for 126x126 at 120x120": 2,
+        "decode file:///data/user/0/com.reactnativefastimageexample/cache/image_manager_disk_cache/HASH.0 8x8 for 126x126 at 8x8": 1,
+        "decode http://10.0.2.2:8090/max-age/picsum/1022-120x120.jpg?cache-path-web-cache-only=RUN 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/max-age/picsum/1022-120x120.jpg?cache-path-web=RUN 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8091/picsum/1022-120x120.jpg?group=cache-path-while-loading-RUN&delay=150 120x120 for 126x126 at 120x120": 1,
         "load cache-path-key-only-RUN source main": 1,
         "load data:(144) cache-path": 1,
         "load file:///data/user/0/com.reactnativefastimageexample/cache/fast-image-http-cache/HASH.1 source main": 2,
@@ -1081,17 +1082,17 @@
         "request /picsum/1022-120x120.jpg?cache-path-after-clear=RUN": 2
     },
     "cache-path-after-clear-loaded": {
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-after-clear-loaded=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-after-clear-loaded=RUN 120x120 for 126x126 at 120x120": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-after-clear-loaded=RUN cache-path": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?cache-path-after-clear-loaded=RUN source main": 1,
         "request /picsum/1022-120x120.jpg?cache-path-after-clear-loaded=RUN": 2
     },
     "clear-disk-cache-thread": {},
     "write-to-cache": {
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache-avif=RUN 80x80 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache=RUN 120x120 for 126x126 at 126x126": 1,
-        "decode write-to-cache-key-only-RUN 120x120 for 126x126 at 126x126": 1,
-        "decode write-to-cache-key-RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache-avif=RUN 80x80 for 126x126 at 80x80": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?write-to-cache=RUN 120x120 for 126x126 at 120x120": 1,
+        "decode write-to-cache-key-only-RUN 120x120 for 126x126 at 120x120": 1,
+        "decode write-to-cache-key-RUN 120x120 for 126x126 at 120x120": 1,
         "load http://10.0.2.2:8090/formats/quadrants.avif?write-to-cache-avif-file=RUN cache-path": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?write-to-cache-cached-file=RUN cache-path": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?write-to-cache-file=RUN cache-path": 1,
@@ -1112,10 +1113,10 @@
         "request /picsum/1025-200x200.jpg?write-to-cache-cached=RUN": 1
     },
     "source-change": {
-        "decode data:(126) 8x8 for 126x126 at 126x126": 1,
+        "decode data:(126) 8x8 for 126x126 at 8x8": 1,
         "decode http://10.0.2.2:8090/magenta.png?source-change-keep-previous=RUN 300x300 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?source-change-keep-previous=RUN 120x120 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?source-change-loading=RUN 120x120 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?source-change-keep-previous=RUN 120x120 for 126x126 at 120x120": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg?source-change-loading=RUN 120x120 for 126x126 at 120x120": 1,
         "load data:(126) source main": 1,
         "load http://10.0.2.2:8090/magenta.png?source-change-keep-previous=RUN source main": 1,
         "load http://10.0.2.2:8090/picsum/1020-120x120.jpg?source-change-data=RUN preload main": 1,
@@ -1206,9 +1207,9 @@
         "load http://10.0.2.2:8091/cyan.png?fade-placeholder=RUN&delay=50 source main": 1
     },
     "thumbhash": {
-        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN 120x120 for 252x189 at 252x252": 1,
-        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 120x120 for 252x189 at 252x252": 1,
-        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-placeholder-late-RUN-0&delay=50 120x120 for 252x189 at 252x252": 1,
+        "decode http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN 120x120 for 252x189 at 120x120": 1,
+        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 120x120 for 252x189 at 120x120": 1,
+        "decode http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-placeholder-late-RUN-0&delay=50 120x120 for 252x189 at 120x120": 1,
         "load http://10.0.2.2:8090/picsum/1022-120x120.jpg?thumbhash-recycled=RUN source main": 1,
         "load http://10.0.2.2:8091/does-not-exist.jpg?thumbhash-fails=RUN&delay=50 source main": 1,
         "load http://10.0.2.2:8091/picsum/1021-120x120.jpg?group=thumbhash-loaded-RUN-0&delay=50 source main": 1,
@@ -1234,7 +1235,7 @@
     },
     "placeholder-url": {
         "decode http://10.0.2.2:8090/magenta.png?placeholder-url-late=RUN 300x300 for 252x189 at 252x252": 1,
-        "decode http://10.0.2.2:8090/quadrants.png?placeholder-url=cached-RUN 20x20 for 105x79 at 105x105": 1,
+        "decode http://10.0.2.2:8090/quadrants.png?placeholder-url=cached-RUN 20x20 for 105x79 at 20x20": 1,
         "load http://10.0.2.2:8090/cyan.png?placeholder-url-error=RUN url-placeholder main": 1,
         "load http://10.0.2.2:8090/cyan.png?placeholder-url-missing=RUN url-placeholder main": 1,
         "load http://10.0.2.2:8090/does-not-exist.png source main": 1,
@@ -1328,9 +1329,9 @@
         "request /magenta.png?tint-change=RUN": 1
     },
     "several-sources": {
-        "decode http://10.0.2.2:8090/sized-100.png?several-48=RUN 100x100 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/sized-300.png?several-120=RUN 300x300 for 315x315 at 315x315": 1,
-        "decode http://10.0.2.2:8090/sized-300.png?several-bundled-120=RUN 300x300 for 315x315 at 315x315": 1,
+        "decode http://10.0.2.2:8090/sized-100.png?several-48=RUN 100x100 for 126x126 at 100x100": 1,
+        "decode http://10.0.2.2:8090/sized-300.png?several-120=RUN 300x300 for 315x315 at 300x300": 1,
+        "decode http://10.0.2.2:8090/sized-300.png?several-bundled-120=RUN 300x300 for 315x315 at 300x300": 1,
         "decode http://10.0.2.2:8090/sized-900.png?several-no-size=RUN 900x900 for 2400x2400 at 900x900": 1,
         "decode http://10.0.2.2:8090/sized-900.png?several-one=RUN 900x900 for 126x126 at 126x126": 1,
         "decode http://localhost:8081/assets/src/images/magenta.png?platform=android&hash=HASH 48x48 for 42x42 at 42x42": 1,
@@ -1347,9 +1348,9 @@
         "request /sized-900.png?several-one=RUN": 1
     },
     "several-sources-large": {
-        "decode http://10.0.2.2:8090/sized-100.png?several-resize=RUN 100x100 for 105x105 at 105x105": 1,
-        "decode http://10.0.2.2:8090/sized-300.png?several-240=RUN 300x300 for 630x630 at 630x630": 1,
-        "decode http://10.0.2.2:8090/sized-300.png?several-resize=RUN 300x300 for 525x525 at 525x525": 1,
+        "decode http://10.0.2.2:8090/sized-100.png?several-resize=RUN 100x100 for 105x105 at 100x100": 1,
+        "decode http://10.0.2.2:8090/sized-300.png?several-240=RUN 300x300 for 630x630 at 300x300": 1,
+        "decode http://10.0.2.2:8090/sized-300.png?several-resize=RUN 300x300 for 525x525 at 300x300": 1,
         "load http://10.0.2.2:8090/sized-100.png?several-resize=RUN source main": 1,
         "load http://10.0.2.2:8090/sized-300.png?several-240=RUN source main": 1,
         "load http://10.0.2.2:8090/sized-300.png?several-resize=RUN source-for-size main": 1,
@@ -1358,9 +1359,9 @@
         "request /sized-300.png?several-resize=RUN": 1
     },
     "several-sources-border": {
-        "decode http://10.0.2.2:8090/sized-100.png?several-border-change=RUN 100x100 for 159x159 at 159x159": 1,
-        "decode http://10.0.2.2:8090/sized-100.png?several-border=RUN 100x100 for 159x159 at 159x159": 1,
-        "decode http://10.0.2.2:8090/sized-300.png?several-border-change=RUN 300x300 for 315x315 at 315x315": 1,
+        "decode http://10.0.2.2:8090/sized-100.png?several-border-change=RUN 100x100 for 159x159 at 100x100": 1,
+        "decode http://10.0.2.2:8090/sized-100.png?several-border=RUN 100x100 for 159x159 at 100x100": 1,
+        "decode http://10.0.2.2:8090/sized-300.png?several-border-change=RUN 300x300 for 315x315 at 300x300": 1,
         "load http://10.0.2.2:8090/sized-100.png?several-border-change=RUN source-for-size main": 1,
         "load http://10.0.2.2:8090/sized-100.png?several-border=RUN source main": 1,
         "load http://10.0.2.2:8090/sized-300.png?several-border-change=RUN source main": 1,
@@ -1369,7 +1370,7 @@
         "request /sized-300.png?several-border-change=RUN": 1
     },
     "image-background": {
-        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 252x126 at 252x252": 1,
+        "decode http://10.0.2.2:8090/picsum/1020-120x120.jpg 120x120 for 252x126 at 120x120": 1,
         "load http://10.0.2.2:8090/picsum/1020-120x120.jpg source main": 1,
         "request /picsum/1020-120x120.jpg": 1
     },
@@ -1430,11 +1431,12 @@
         "request /formats/animated.avif": 1
     },
     "webp-animation": {
-        "blur - 126x126 to 126x126 box 15": 1,
-        "decode http://10.0.2.2:8090/formats/animated.webp 80x80 for 126x126 at 126x126": 6,
+        "blur - 80x80 to 83x83 box 11": 1,
+        "decode http://10.0.2.2:8090/formats/animated.webp 80x80 for 126x126 at 126x126": 5,
+        "decode http://10.0.2.2:8090/formats/animated.webp 80x80 for 126x126 at 80x80": 1,
         "decode http://10.0.2.2:8090/formats/animated.webp?webp-loop-remount=RUN 80x80 for 126x126 at 126x126": 1,
         "decode http://10.0.2.2:8090/formats/animated.webp?webp-loop-unset=RUN 80x80 for 126x126 at 126x126": 1,
-        "decode http://10.0.2.2:8090/quadrants.png 20x20 for 126x126 at 126x126": 1,
+        "decode http://10.0.2.2:8090/quadrants.png 20x20 for 126x126 at 20x20": 1,
         "load http://10.0.2.2:8090/formats/animated.webp source main": 6,
         "load http://10.0.2.2:8090/formats/animated.webp?webp-loop-remount=RUN source main": 2,
         "load http://10.0.2.2:8090/formats/animated.webp?webp-loop-unset=RUN source main": 1,
@@ -1445,8 +1447,8 @@
         "request /quadrants.png": 1
     },
     "apng-animation": {
-        "blur - 126x126 to 126x126 box 15": 1,
-        "decode http://10.0.2.2:8090/formats/animated.png 80x80 for 126x126 at 126x126": 1,
+        "blur - 80x80 to 83x83 box 11": 1,
+        "decode http://10.0.2.2:8090/formats/animated.png 80x80 for 126x126 at 80x80": 1,
         "load http://10.0.2.2:8090/formats/animated.png source main": 6,
         "request /formats/animated.png": 1
     },
@@ -1589,8 +1591,8 @@
     },
     "border-radius": {
         "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN 200x200 for 190x190 at 190x190": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN 200x200 for 263x263 at 263x263": 1,
-        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN 200x200 for 576x263 at 576x576": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN 200x200 for 263x263 at 200x200": 1,
+        "decode http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN 200x200 for 576x263 at 200x200": 1,
         "load http://10.0.2.2:8090/picsum/1025-200x200.jpg?bust=0.RUN source main": 4,
         "request /picsum/1025-200x200.jpg?bust=0.RUN": 1
     },
@@ -1612,9 +1614,9 @@
         "request /logo.png": 1
     },
     "examples-3": {
-        "decode data:(28279) 100x100 for 168x168 at 168x168": 1,
-        "decode http://localhost:8081/assets/src/images/fields-webp.webp?platform=android&hash=HASH 100x100 for 168x168 at 168x168": 1,
-        "decode http://localhost:8081/assets/src/images/fields.jpg?platform=android&hash=HASH 100x100 for 168x168 at 168x168": 1,
+        "decode data:(28279) 100x100 for 168x168 at 100x100": 1,
+        "decode http://localhost:8081/assets/src/images/fields-webp.webp?platform=android&hash=HASH 100x100 for 168x168 at 100x100": 1,
+        "decode http://localhost:8081/assets/src/images/fields.jpg?platform=android&hash=HASH 100x100 for 168x168 at 100x100": 1,
         "decode http://localhost:8081/assets/src/images/jellyfish-webp.webp?platform=android&hash=HASH 100x100 for 168x168 at 168x168": 1,
         "decode http://localhost:8081/assets/src/images/jellyfish.gif?platform=android&hash=HASH gif at 168x168": 1,
         "load data:(28279) source main": 1,
@@ -1625,7 +1627,7 @@
     },
     "examples-auto-size": {
         "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?bust=0.RUN 600x300 for 525x263 at 526x263": 1,
-        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?bust=0.RUN 600x300 for 525x788 at 1576x788": 1,
+        "decode http://10.0.2.2:8090/picsum/1018-600x300.jpg?bust=0.RUN 600x300 for 525x788 at 600x300": 1,
         "load http://10.0.2.2:8090/picsum/1018-600x300.jpg?bust=0.RUN source main": 1,
         "reload http://10.0.2.2:8090/picsum/1018-600x300.jpg?bust=0.RUN size main": 1,
         "request /picsum/1018-600x300.jpg?bust=0.RUN": 1

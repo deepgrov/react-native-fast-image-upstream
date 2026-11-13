@@ -1644,6 +1644,34 @@ describe('maxPixelDensity', () => {
     })
 })
 
+describe('limitToScreen', () => {
+    it('is passed to the native view', () => {
+        const [view] = renderer
+            .create(
+                <FastImage
+                    source={{ uri: 'https://example.com/a.jpg' }}
+                    limitToScreen={false}
+                />,
+            )
+            .root.findAll((node) => node.type === ('FastImageView' as any))
+        expect(view.props.limitToScreen).toBe(false)
+    })
+
+    it('routes to the background image only', () => {
+        const rendered = renderer.create(
+            <FastImageBackground
+                source={{ uri: 'https://example.com/a.jpg' }}
+                limitToScreen={false}
+            />,
+        ).root
+        const image = rendered.findAll(
+            (node) => node.type === ('FastImageView' as any),
+        )[0]
+        expect(image.props.limitToScreen).toBe(false)
+        expect(rendered.findByType(View).props.limitToScreen).toBeUndefined()
+    })
+})
+
 describe('downsample', () => {
     it('is passed to the native view', () => {
         const [view] = renderer

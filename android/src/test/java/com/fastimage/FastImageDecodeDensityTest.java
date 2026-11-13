@@ -13,16 +13,21 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 // maxPixelDensity: the box an image is requested for (decodeBox) is the
 // view's pixels scaled down to that many pixels per dp, on a screen denser
 // than it (here 4 pixels per dp). Without the prop, and where it doesn't
 // apply, the box is FastImageSourceSize.box's, as before the prop existed.
+// (Views longer than the screen have limitToScreen off here: see
+// FastImageScreenLimitTest.)
 @RunWith(RobolectricTestRunner.class)
 @Config(qualifiers = "xxxhdpi")
 public class FastImageDecodeDensityTest {
     private FastImageViewWithUrl view() {
-        return new FastImageViewWithUrl(RuntimeEnvironment.getApplication(), null);
+        FastImageViewWithUrl view = new FastImageViewWithUrl(RuntimeEnvironment.getApplication(), null);
+        ReflectionHelpers.setField(view, "mModel", "https://example.org/image.png");
+        return view;
     }
 
     // As Fabric sets and resets the prop (null is its default, 0), on a view
@@ -58,12 +63,14 @@ public class FastImageDecodeDensityTest {
     }
 
     // A view much longer than the screen (a long illustration at the screen's
-    // width): only the density scales its box, whatever its length, so the
-    // prop can be used for it too. Its long side isn't brought down to the
-    // screen's, which would leave text in it unreadable.
+    // width) with limitToScreen off: only the density scales its box,
+    // whatever its length, so the prop can be used for it too. Its long side
+    // isn't brought down to the screen's, which would leave text in it
+    // unreadable.
     @Test
     public void aViewLongerThanTheScreenIsOnlyScaledForTheDensity() {
         FastImageViewWithUrl view = view();
+        view.setLimitToScreen(false);
         view.setObjectFit(ImageView.ScaleType.FIT_CENTER);
         DisplayMetrics display = Resources.getSystem().getDisplayMetrics();
         int screen = Math.max(display.widthPixels, display.heightPixels);
@@ -78,11 +85,13 @@ public class FastImageDecodeDensityTest {
         assertArrayEquals(new int[]{540, 4320}, view.decodeBox(1080, 8640));
     }
 
-    // Without the prop: FastImageSourceSize.box's box (the view's pixels, at
-    // most MAX_PIXELS of them), for a view of any length.
+    // Without the prop (and limitToScreen off): FastImageSourceSize.box's box
+    // (the view's pixels, at most MAX_PIXELS of them), for a view of any
+    // length.
     @Test
     public void withoutThePropTheBoxIsTheViewsPixelsWithinThePixelBudget() {
         FastImageViewWithUrl view = view();
+        view.setLimitToScreen(false);
         view.setObjectFit(ImageView.ScaleType.FIT_CENTER);
         view.layout(0, 0, 1080, 8640);
         assertArrayEquals(new int[]{1080, 8640}, view.decodeBox(1080, 8640));

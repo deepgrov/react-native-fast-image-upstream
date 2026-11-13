@@ -55,6 +55,18 @@ final class FastImageBlur extends BitmapTransformation {
         // Blurred at the size it's shown at, or at its own size if it's shown
         // larger.
         float scale = Math.min(shownScale, 1);
+        // A centered cover image's bitmap can be smaller than the box it's
+        // shown in (no larger than the image's own size, FastImageCoverCrop),
+        // which the view scales up. At its own size its box would be that much
+        // smaller, and a small one rounds to no blur at all. So it's blurred
+        // at the shown size if its box is at most MIN_BOX there, and otherwise
+        // at a size between its own and the shown one where its box is at
+        // least MIN_BOX, as blur below blurs a large box's smaller copy. It
+        // stays that size: the view scales it up.
+        if (scaleType == ImageView.ScaleType.CENTER_CROP && shownScale > 1) {
+            scale = boxSize(radius, Math.max(outWidth, outHeight)) <= MIN_BOX ? shownScale
+                    : Math.max(1, Math.min(shownScale, shownScale * radiusFor(MIN_BOX) / radius));
+        }
         int blurredWidth = Math.max(1, Math.round(width * scale));
         int blurredHeight = Math.max(1, Math.round(height * scale));
         int boxSize = boxSize(radius * scale / shownScale, Math.max(blurredWidth, blurredHeight));
@@ -95,6 +107,15 @@ final class FastImageBlur extends BitmapTransformation {
             default:
                 return 1;
         }
+    }
+
+    // The smallest box blur's box (blur below) that matches blurring at full
+    // size within a few levels of 255.
+    private static final int MIN_BOX = 11;
+
+    // The smallest radius (in pixels) whose box (boxSize) is box (odd).
+    private static float radiusFor(int box) {
+        return (float) ((2 * (box - 1) - 0.5) / (3 * Math.sqrt(2 * Math.PI) / 4) * 1.0001);
     }
 
     // React Native's (RCTImageBlurUtils) for a radius in pixels: odd, so it's

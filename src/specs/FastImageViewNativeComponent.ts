@@ -71,6 +71,7 @@ export interface NativeProps extends ViewProps {
     transitionSkipOnCacheHit?: string
     downsample?: CodegenTypes.WithDefault<boolean, true>
     maxPixelDensity?: CodegenTypes.WithDefault<CodegenTypes.Float, 0>
+    limitToScreen?: CodegenTypes.WithDefault<boolean, true>
     // standard, constrained or no-limit ('' when not set). iOS and tvOS 17+
     // (Android ignores it).
     dynamicRangeLimit?: string
